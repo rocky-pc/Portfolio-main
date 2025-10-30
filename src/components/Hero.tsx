@@ -51,13 +51,30 @@ const Hero = () => {
   };
 
   return (
-    <section className="min-h-screen flex items-center justify-center relative overflow-hidden">
-      {/* Shader Animation Background */}
-      <div className="absolute inset-0 z-0">
-        <ShaderAnimation />
-      </div>
+    <section className="min-h-screen flex items-center justify-center relative overflow-hidden bg-gradient-hero">
+      {/* Animated particles background */}
 
-      <div className="container mx-auto px-6 z-10 relative">
+      <div className="absolute inset-0 z-0">
+                 <div className="particles">
+        {[...Array(50)].map((_, i) => (
+          <div
+            key={i}
+            className="particle"
+            style={{
+              left: `${Math.random() * 100}%`,
+              top: `${Math.random() * 100}%`,
+              width: `${Math.random() * 4 + 1}px`,
+              height: `${Math.random() * 4 + 1}px`,
+              animationDelay: `${Math.random() * 6}s`,
+              animationDuration: `${Math.random() * 3 + 4}s`
+            }}
+          />
+        ))}
+      </div>
+        <ShaderAnimation />
+
+      </div>
+      <div className="container mx-auto px-6 z-10">
         <div className="text-center space-y-8">
           <div className="space-y-4">
             <h1 
