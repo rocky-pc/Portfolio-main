@@ -61,9 +61,7 @@ Tailwind CSS 🎨 – Utility-first styling
 shadcn-ui 🧩 – Prebuilt UI components
 
 🌍 Deployment
-
-I can publish the project easily by using the Share → Publish option inside Lovable
-.
+Me
 
 🔗 Custom Domain Setup
 
