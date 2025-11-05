@@ -166,7 +166,7 @@ const Shop: React.FC = () => {
         });
         const dropin = cf.checkout({
           paymentSessionId: paymentSessionId,
-          redirectTarget: "_modal",
+          redirectTarget: "_self",
           returnUrl: `${window.location.origin}/order-success?order_id=${orderId}&verify=true`,
           onVerify: (orderID) => {
             // Handle successful payment verification
