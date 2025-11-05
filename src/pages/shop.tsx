@@ -132,12 +132,8 @@ const handlePaymentSubmit = async () => {
   const generatedOrderId = "order_" + Date.now();
   setOrderId(generatedOrderId);
 
-  const orderData = {
-    cart,
-    address,
-    orderId: generatedOrderId,
-    total: totalAmount,
-  };
+  // keep order data for the success page
+  const orderData = { cart, address, orderId: generatedOrderId, total: totalAmount };
   localStorage.setItem('orderData', JSON.stringify(orderData));
 
   try {
@@ -154,39 +150,35 @@ const handlePaymentSubmit = async () => {
     });
 
     const data = await res.json();
+    if (!data.payment_session_id) throw new Error("No payment session id");
 
-    if (data.payment_session_id) {
-      const paymentSessionId = data.payment_session_id;
-      const returnUrl = `${window.location.origin}/order-success`;
+    const paymentSessionId = data.payment_session_id;
+    const returnUrl = `${window.location.origin}/order-success`;
 
-      // Initialize Cashfree
-      const cashfree = window.Cashfree({
-        mode: "sandbox"
-      });
+    // ---- Cashfree SDK (modal) ----
+    const cashfree = window.Cashfree({ mode: "sandbox" });
 
-      // Use promise-based checkout
-      cashfree.checkout({
-        paymentSessionId: paymentSessionId,
-      }).then((result) => {
-        if (result.error) {
-          console.error("Payment error:", result.error);
-          alert("Payment failed. Please try again.");
-        } else if (result.paymentDetails) {
-          // Payment successful → redirect manually with order_id
+    cashfree
+      .checkout({
+        paymentSessionId,
+        redirectTarget: "_modal",           // <-- opens in a popup
+        returnUrl,                          // ignored for _modal, we handle it ourselves
+      })
+      .then((result: any) => {
+        // ---- SUCCESS ----
+        if (result.paymentDetails) {
+          // close modal automatically (Cashfree does it) and go to success page
           const successUrl = `${returnUrl}?order_id=${generatedOrderId}&verify=true`;
           window.location.href = successUrl;
         }
-      }).catch((err) => {
-        console.error("Checkout error:", err);
-        alert("Payment processing failed.");
+      })
+      .catch((err: any) => {
+        console.error("Cashfree error:", err);
+        alert("Payment failed. Please try again.");
       });
-
-    } else {
-      alert("Failed to create payment session.");
-    }
-  } catch (error) {
-    console.error("Payment error:", error);
-    alert("An error occurred. Please try again.");
+  } catch (e) {
+    console.error(e);
+    alert("Could not start payment. Please try again.");
   }
 };
 
