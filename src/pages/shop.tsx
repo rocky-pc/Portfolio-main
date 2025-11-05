@@ -148,12 +148,41 @@ const Shop: React.FC = () => {
       const data = await res.json();
 
       if (data.payment_session_id) {
-        const cashfree = new (window as any).Cashfree({ mode: "production" }); // or 'production'
-        cashfree.checkout({
+        const cashfree = new (window as any).Cashfree({ mode: "production" });
+
+        const checkoutOptions = {
           paymentSessionId: data.payment_session_id,
           redirectTarget: "_modal",
-          returnUrl: `${window.location.origin}/shop?order_id=${generatedOrderId}`,
-        });
+        };
+
+        cashfree
+          .on("payment_initiate", () => {
+            console.log("🟢 Payment started");
+          })
+          .on("payment_success", async (eventData: any) => {
+            console.log("✅ Payment success", eventData);
+
+            // Verify payment status via backend
+            const verifyRes = await fetch("/.netlify/functions/verifyPayment", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ orderId: generatedOrderId }),
+            });
+            const verifyData = await verifyRes.json();
+
+            if (verifyData.order_status === "PAID") {
+              // Redirect only if payment confirmed
+              window.location.href = `/order-success?order_id=${generatedOrderId}`;
+            } else {
+              alert("Payment not confirmed yet. Please wait or refresh.");
+            }
+          })
+          .on("payment_failure", (eventData: any) => {
+            console.error("❌ Payment failed", eventData);
+            alert("Payment failed. Please try again.");
+          });
+
+        cashfree.pay(checkoutOptions);
       } else {
         alert("Error: could not create payment order.");
       }
@@ -171,30 +200,7 @@ const Shop: React.FC = () => {
     setOrderId('');
   };
 
-  useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const orderIdParam = urlParams.get('order_id');
-    if (orderIdParam) {
-      // Verify payment
-      fetch("/.netlify/functions/verifyPayment", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ orderId: orderIdParam }),
-      })
-        .then(res => res.json())
-        .then(data => {
-          if (data.order_status === 'PAID') {
-            setCurrentStep('confirmation');
-          } else {
-            alert("Payment not completed. Please try again.");
-          }
-        })
-        .catch(error => {
-          console.error("Payment verification error:", error);
-          alert("Error verifying payment. Please contact support.");
-        });
-    }
-  }, []);
+  // Removed useEffect for payment verification since we're now using event listeners
 
   return (
     <div className="min-h-screen bg-background text-foreground">
