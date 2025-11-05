@@ -90,10 +90,7 @@ const Shop: React.FC = () => {
     zip: '',
   });
   const [payment, setPayment] = useState({
-    cardNumber: '',
-    expiry: '',
-    cvv: '',
-    name: '',
+    method: 'cashfree', // Default to Cashfree for multiple methods
   });
 
   const addToCart = (product: typeof products[0]) => {
@@ -129,33 +126,36 @@ const Shop: React.FC = () => {
     setCurrentStep('payment');
   };
 
-  const handlePaymentSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
+  const handlePaymentSubmit = async () => {
     const totalAmount = getTotal();
 
-    const res = await fetch("/.netlify/functions/createOrder", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        orderId: "order_" + Date.now(),
-        amount: totalAmount,
-        customerName: address.name,
-        customerEmail: address.email,
-        customerPhone: address.phone,
-      }),
-    });
-
-    const data = await res.json();
-
-    if (data.payment_session_id) {
-      const cashfree = new (window as any).Cashfree({ mode: "production" }); // or 'production'
-      cashfree.checkout({
-        paymentSessionId: data.payment_session_id,
-        redirectTarget: "_self",
+    try {
+      const res = await fetch("/.netlify/functions/createOrder", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          orderId: "order_" + Date.now(),
+          amount: totalAmount,
+          customerName: address.name,
+          customerEmail: address.email,
+          customerPhone: address.phone,
+        }),
       });
-    } else {
-      alert("Error: could not create payment order.");
+
+      const data = await res.json();
+
+      if (data.payment_session_id) {
+        const cashfree = new (window as any).Cashfree({ mode: "production" }); // or 'production'
+        cashfree.checkout({
+          paymentSessionId: data.payment_session_id,
+          redirectTarget: "_self",
+        });
+      } else {
+        alert("Error: could not create payment order.");
+      }
+    } catch (error) {
+      console.error("Payment submission error:", error);
+      alert("An error occurred while processing your payment. Please try again.");
     }
   };
 
@@ -163,7 +163,7 @@ const Shop: React.FC = () => {
     setCart([]);
     setCurrentStep('products');
     setAddress({ name: '', email: '', phone: '', street: '', city: '', state: '', zip: '' });
-    setPayment({ cardNumber: '', expiry: '', cvv: '', name: '' });
+    setPayment({ method: 'cashfree' });
   };
 
   return (
@@ -358,58 +358,36 @@ const Shop: React.FC = () => {
         {currentStep === 'payment' && (
           <div className="max-w-2xl mx-auto">
             <h2 className="text-3xl font-bold mb-8 gradient-text">Payment Information</h2>
-            <form onSubmit={handlePaymentSubmit} className="space-y-6">
-              <div>
-                <Label htmlFor="cardName">Cardholder Name</Label>
-                <Input
-                  id="cardName"
-                  value={payment.name}
-                  onChange={(e) => setPayment(prev => ({ ...prev, name: e.target.value }))}
-                  required
-                />
-              </div>
-              <div>
-                <Label htmlFor="cardNumber">Card Number</Label>
-                <Input
-                  id="cardNumber"
-                  value={payment.cardNumber}
-                  onChange={(e) => setPayment(prev => ({ ...prev, cardNumber: e.target.value }))}
-                  placeholder="1234 5678 9012 3456"
-                  required
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="expiry">Expiry Date</Label>
-                  <Input
-                    id="expiry"
-                    value={payment.expiry}
-                    onChange={(e) => setPayment(prev => ({ ...prev, expiry: e.target.value }))}
-                    placeholder="MM/YY"
-                    required
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="cvv">CVV</Label>
-                  <Input
-                    id="cvv"
-                    value={payment.cvv}
-                    onChange={(e) => setPayment(prev => ({ ...prev, cvv: e.target.value }))}
-                    placeholder="123"
-                    required
-                  />
+            <div className="space-y-6">
+              <div className="glass p-6 rounded-lg">
+                <h3 className="text-lg font-semibold mb-4">Choose Payment Method</h3>
+                <p className="text-muted-foreground mb-4">
+                  You can pay using UPI, Card, or Net Banking through our secure payment gateway.
+                </p>
+                <div className="flex items-center space-x-4">
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="radio"
+                      id="cashfree"
+                      name="paymentMethod"
+                      value="cashfree"
+                      checked={payment.method === 'cashfree'}
+                      onChange={(e) => setPayment({ method: e.target.value })}
+                    />
+                    <Label htmlFor="cashfree">Cashfree (UPI, Card, Net Banking)</Label>
+                  </div>
                 </div>
               </div>
               <div className="flex justify-between">
                 <Button variant="outline" onClick={() => setCurrentStep('checkout')}>
                   Back to Address
                 </Button>
-                <Button type="submit">
+                <Button onClick={handlePaymentSubmit}>
                   <CreditCard className="w-4 h-4 mr-2" />
-                  Complete Order
+                  Proceed to Payment
                 </Button>
               </div>
-            </form>
+            </div>
           </div>
         )}
 
