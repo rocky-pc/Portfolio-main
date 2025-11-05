@@ -93,6 +93,7 @@ const Shop: React.FC = () => {
     method: 'cashfree', // Default to Cashfree for multiple methods
   });
   const [orderId, setOrderId] = useState<string>('');
+  const [loading, setLoading] = useState(false);
 
   const addToCart = (product: typeof products[0]) => {
     setCart(prev => {
@@ -128,6 +129,7 @@ const Shop: React.FC = () => {
   };
 
   const handlePaymentSubmit = async () => {
+    setLoading(true);
     const totalAmount = getTotal();
     const generatedOrderId = "order_" + Date.now();
     setOrderId(generatedOrderId);
@@ -158,6 +160,29 @@ const Shop: React.FC = () => {
 
       if (data.payment_session_id) {
         const cashfree = new (window as any).Cashfree({ mode: "sandbox" }); // or 'production'
+
+        cashfree.on("payment_success", async () => {
+          console.log("✅ Payment succeeded, verifying...");
+
+          // 3️⃣ Verify payment through serverless function
+          const verifyRes = await fetch("/.netlify/functions/verifyPayment", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ order_id: generatedOrderId }),
+          });
+
+          const verifyData = await verifyRes.json();
+          if (verifyData.success) {
+            window.location.href = "/order-confirmation";
+          } else {
+            alert("Payment not verified. Please wait or contact support.");
+          }
+        });
+
+        cashfree.on("payment_failure", () => {
+          alert("❌ Payment failed or canceled.");
+        });
+
         cashfree.checkout({
           paymentSessionId: data.payment_session_id,
           redirectTarget: "_modal",
@@ -169,6 +194,8 @@ const Shop: React.FC = () => {
     } catch (error) {
       console.error("Payment submission error:", error);
       alert("An error occurred while processing your payment. Please try again.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -419,9 +446,9 @@ const Shop: React.FC = () => {
                 <Button variant="outline" onClick={() => setCurrentStep('checkout')}>
                   Back to Address
                 </Button>
-                <Button onClick={handlePaymentSubmit}>
+                <Button onClick={handlePaymentSubmit} disabled={loading}>
                   <CreditCard className="w-4 h-4 mr-2" />
-                  Proceed to Payment
+                  {loading ? "Processing..." : "Proceed to Payment"}
                 </Button>
               </div>
             </div>
