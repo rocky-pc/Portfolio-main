@@ -159,7 +159,7 @@ const Shop: React.FC = () => {
       const data = await res.json();
 
       if (data.payment_session_id) {
-        const cashfree = new (window as any).Cashfree({ mode: "sandbox" }); // or 'production'
+        const cashfree = (window as any).Cashfree({ mode: "sandbox" }); // or 'production'
 
         cashfree.on("payment_success", async () => {
           console.log("✅ Payment succeeded, verifying...");
