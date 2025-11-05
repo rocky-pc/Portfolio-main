@@ -19,13 +19,7 @@ import { ShoppingCart, Plus, Minus, Trash2, CreditCard, MapPin, CheckCircle } fr
 // Declare Cashfree globally
 declare global {
   interface Window {
-    Cashfree: {
-      checkout: (options: {
-        paymentSessionId: string;
-        redirectTarget?: string;
-        returnUrl?: string;
-      }) => void;
-    };
+    Cashfree: any;
   }
 }
 
@@ -167,7 +161,10 @@ const Shop: React.FC = () => {
         const orderId = generatedOrderId;
 
         // 2️⃣ Open Cashfree payment popup
-        window.Cashfree.checkout({
+        console.log('Cashfree object:', window.Cashfree);
+        const cf = new window.Cashfree();
+        console.log('Cashfree instance:', cf);
+        cf.checkout({
           paymentSessionId: paymentSessionId,
           redirectTarget: "_modal",
           returnUrl: `${window.location.origin}/order-success?order_id=${orderId}&verify=true`,
