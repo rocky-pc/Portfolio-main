@@ -42,38 +42,26 @@ const OrderSuccess: React.FC = () => {
         const parsedData: OrderData = JSON.parse(storedData);
         setOrderData(parsedData);
 
-        // Check if running in localhost/development mode
-        const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-
-        if (isLocalhost) {
-          // In localhost, mock successful verification for testing
-          console.log('Localhost mode: Mocking successful payment verification');
-          setVerificationStatus('success');
-          // Clear localStorage after successful verification
-          localStorage.removeItem('orderData');
-        } else {
-          // In production, verify payment with API
-          fetch("/.netlify/functions/verifyPayment", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ orderId: orderIdParam }),
-          })
-            .then(res => res.json())
-            .then(data => {
-              if (data.order_status === 'PAID') {
-                setVerificationStatus('success');
-                // Clear localStorage after successful verification
-                localStorage.removeItem('orderData');
-              } else {
-                console.error('Payment verification failed:', data);
-                setVerificationStatus('failed');
-              }
-            })
-            .catch(error => {
-              console.error("Payment verification error:", error);
+        // Verify payment
+        fetch("/.netlify/functions/verifyPayment", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ orderId: orderIdParam }),
+        })
+          .then(res => res.json())
+          .then(data => {
+            if (data.order_status === 'PAID') {
+              setVerificationStatus('success');
+              // Clear localStorage after successful verification
+              localStorage.removeItem('orderData');
+            } else {
               setVerificationStatus('failed');
-            });
-        }
+            }
+          })
+          .catch(error => {
+            console.error("Payment verification error:", error);
+            setVerificationStatus('failed');
+          });
       } else {
         setVerificationStatus('failed');
       }

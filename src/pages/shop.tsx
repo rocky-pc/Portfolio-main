@@ -157,7 +157,7 @@ const Shop: React.FC = () => {
       const data = await res.json();
 
       if (data.payment_session_id) {
-        const cashfree = new (window as any).Cashfree({ mode: "production" }); // or 'production'
+        const cashfree = new (window as any).Cashfree({ mode: "sandbox" }); // or 'production'
         cashfree.checkout({
           paymentSessionId: data.payment_session_id,
           redirectTarget: "_modal",
