@@ -149,14 +149,13 @@ const Shop: React.FC = () => {
     const data = await res.json();
 
     if (data.payment_session_id) {
-      // Load Cashfree SDK
-      const cashfree = new window.Cashfree({ mode: "sandbox" });
-      cashfree.pay({
+      const cashfree = new (window as any).Cashfree({ mode: "sandbox" }); // or 'production'
+      cashfree.checkout({
         paymentSessionId: data.payment_session_id,
         redirectTarget: "_self",
       });
     } else {
-      alert("Error creating payment order");
+      alert("Error: could not create payment order.");
     }
   };
 
