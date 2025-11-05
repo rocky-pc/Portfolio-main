@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { GradientButton } from '@/components/ui/gradient-button';
 import { Github, Linkedin, Mail, Download, ArrowDown } from 'lucide-react';
 import { ShaderAnimation } from '@/components/ui/shader-animation';
 

@@ -12,6 +12,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import { ShaderAnimation } from '@/components/ui/shader-animation';
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 // import { GradientButton } from '@/components/ui/gradient-button';
@@ -215,14 +216,27 @@ const handlePaymentSubmit = async () => {
 
 
   return (
-    <div >
+    <div className="relative min-h-screen">
+      <div className="absolute inset-0 -z-10">
+        <ShaderAnimation />
+      </div>
       {/* Header */}
-      <header className="glass sticky top-0 z-50 border-b border-border/30">
-        <div className="container mx-auto px-6 py-4 flex justify-between items-center">
-          <h1 className="text-2xl font-bold gradient-text">Tech Shop</h1>
-          <Sheet>
+      <header className=" top-0 z-50">
+        
+        <div className="container mx-auto px-8 py-4 flex justify-center items-center">
+          <h1 className=" text-4xl font-bold gradient-text text-center">Tech Shop</h1>
+        </div>
+      </header>
+
+      {/* Main Content */}
+      <main className="container mx-auto px-6 py-0">
+        {currentStep === 'products' && (
+          <>
+           <div className="container mx-auto px-2 py-0 flex justify-between ">
+            <h2 className="text-3xl font-bold mb-8 gradient-text">Our Products</h2>
+                      <Sheet>
             <SheetTrigger asChild>
-              <Button variant="ghost" className={`relative ${cartBlink ? 'animate-pulse' : 'green-500'}`}>
+              <Button variant="ghost" className={`relative ${cartBlink ? 'animate-pulse' : ''}`}>
                 <ShoppingCart className="w-6 h-6" />
                 {cart.length > 0 && (
                   <Badge className="absolute -top-2 -right-2 bg-primary text-primary-foreground">
@@ -288,14 +302,7 @@ const handlePaymentSubmit = async () => {
               </div>
             </SheetContent>
           </Sheet>
-        </div>
-      </header>
-
-      {/* Main Content */}
-      <main className="container mx-full px-6 py-8" style={{ paddingTop: '2rem', paddingBottom: '19.5rem' }}>
-        {currentStep === 'products' && (
-          <>
-            <h2 className="text-3xl font-bold mb-8 gradient-text">Our Products</h2>
+          </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {products.map(product => (
                 <Card key={product.id} className="glass-hover">
