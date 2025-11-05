@@ -34,8 +34,9 @@ const OrderSuccess: React.FC = () => {
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const orderIdParam = urlParams.get('order_id');
+    const verifyParam = urlParams.get('verify');
 
-    if (orderIdParam) {
+    if (orderIdParam && verifyParam === 'true') {
       // Retrieve order data from localStorage
       const storedData = localStorage.getItem('orderData');
       if (storedData) {
@@ -50,7 +51,7 @@ const OrderSuccess: React.FC = () => {
         })
           .then(res => res.json())
           .then(data => {
-            if (data.order_status === 'PAID') {
+            if (data.success) {
               setVerificationStatus('success');
               // Clear localStorage after successful verification
               localStorage.removeItem('orderData');

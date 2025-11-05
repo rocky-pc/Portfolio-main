@@ -19,9 +19,12 @@ import { ShoppingCart, Plus, Minus, Trash2, CreditCard, MapPin, CheckCircle } fr
 // Declare Cashfree globally
 declare global {
   interface Window {
-    Cashfree: new (paymentSessionId: string) => {
-      on: (event: string, callback: () => void) => void;
-      open: () => void;
+    Cashfree: {
+      checkout: (options: {
+        paymentSessionId: string;
+        redirectTarget?: string;
+        returnUrl?: string;
+      }) => void;
     };
   }
 }
@@ -164,31 +167,11 @@ const Shop: React.FC = () => {
         const orderId = generatedOrderId;
 
         // 2️⃣ Open Cashfree payment popup
-        const cashfree = new window.Cashfree(paymentSessionId);
-
-        cashfree.on("payment_success", async () => {
-          console.log("✅ Payment succeeded, verifying...");
-
-          // 3️⃣ Verify payment through serverless function
-          const verifyRes = await fetch("/.netlify/functions/verifyPayment", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ orderId: orderId }),
-          });
-
-          const verifyData = await verifyRes.json();
-          if (verifyData.success) {
-            setCurrentStep('confirmation');
-          } else {
-            alert("Payment not verified. Please wait or contact support.");
-          }
+        window.Cashfree.checkout({
+          paymentSessionId: paymentSessionId,
+          redirectTarget: "_modal",
+          returnUrl: `${window.location.origin}/order-success?order_id=${orderId}&verify=true`,
         });
-
-        cashfree.on("payment_failure", () => {
-          alert("❌ Payment failed or canceled.");
-        });
-
-        cashfree.open();
       } else {
         alert("Error: could not create payment order.");
       }
