@@ -42,26 +42,36 @@ const OrderSuccess: React.FC = () => {
         const parsedData: OrderData = JSON.parse(storedData);
         setOrderData(parsedData);
 
-        // Verify payment
-        fetch("/.netlify/functions/verifyPayment", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ orderId: orderIdParam }),
-        })
-          .then(res => res.json())
-          .then(data => {
-            if (data.order_status === 'PAID') {
+        // Auto-verify payment with polling
+        const verifyPayment = async (attempts = 0) => {
+          try {
+            const res = await fetch("/.netlify/functions/verifyPayment", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ order_id: orderIdParam }),
+            });
+            const result = await res.json();
+
+            if (result.success && result.data.order_amount == parsedData.total) {
               setVerificationStatus('success');
               // Clear localStorage after successful verification
               localStorage.removeItem('orderData');
+            } else if (attempts < 10) { // Poll up to 10 times
+              setTimeout(() => verifyPayment(attempts + 1), 5000); // Retry every 5 seconds
             } else {
               setVerificationStatus('failed');
             }
-          })
-          .catch(error => {
+          } catch (error) {
             console.error("Payment verification error:", error);
-            setVerificationStatus('failed');
-          });
+            if (attempts < 10) {
+              setTimeout(() => verifyPayment(attempts + 1), 5000);
+            } else {
+              setVerificationStatus('failed');
+            }
+          }
+        };
+
+        verifyPayment();
       } else {
         setVerificationStatus('failed');
       }

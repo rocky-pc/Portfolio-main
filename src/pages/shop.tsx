@@ -185,23 +185,21 @@ const Shop: React.FC = () => {
     const orderIdParam = urlParams.get('order_id');
     if (orderIdParam) {
       // Verify payment
-      fetch("/.netlify/functions/verifyPayment", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ orderId: orderIdParam }),
-      })
-        .then(res => res.json())
-        .then(data => {
-          if (data.order_status === 'PAID') {
-            setCurrentStep('confirmation');
-          } else {
-            alert("Payment not completed. Please try again.");
-          }
-        })
-        .catch(error => {
-          console.error("Payment verification error:", error);
-          alert("Error verifying payment. Please contact support.");
+      const verifyPayment = async (orderId: string) => {
+        const res = await fetch("/.netlify/functions/verifyPayment", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ order_id: orderId }),
         });
+        const result = await res.json();
+
+        if (result.success) {
+          window.location.href = "/order-success";
+        } else {
+          alert("Payment not verified yet!");
+        }
+      };
+      verifyPayment(orderIdParam);
     }
   }, []);
 
