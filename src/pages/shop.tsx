@@ -16,6 +16,13 @@ import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTr
 // import { GradientButton } from '@/components/ui/gradient-button';
 import { ShoppingCart, Plus, Minus, Trash2, CreditCard, MapPin, CheckCircle } from 'lucide-react';
 
+// Declare Cashfree globally
+declare global {
+  interface Window {
+    Cashfree: any;
+  }
+}
+
 // Mock product data
 const products = [
   {
@@ -122,10 +129,35 @@ const Shop: React.FC = () => {
     setCurrentStep('payment');
   };
 
-  const handlePaymentSubmit = (e: React.FormEvent) => {
+  const handlePaymentSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Here you would integrate with the actual payment gateway
-    setCurrentStep('confirmation');
+
+    const totalAmount = getTotal();
+
+    const res = await fetch("/.netlify/functions/createOrder", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        orderId: "order_" + Date.now(),
+        amount: totalAmount,
+        customerName: address.name,
+        customerEmail: address.email,
+        customerPhone: address.phone,
+      }),
+    });
+
+    const data = await res.json();
+
+    if (data.payment_session_id) {
+      // Load Cashfree SDK
+      const cashfree = new window.Cashfree({ mode: "sandbox" });
+      cashfree.pay({
+        paymentSessionId: data.payment_session_id,
+        redirectTarget: "_self",
+      });
+    } else {
+      alert("Error creating payment order");
+    }
   };
 
   const resetOrder = () => {
