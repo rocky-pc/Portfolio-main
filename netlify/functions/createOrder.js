@@ -1,5 +1,3 @@
-const fetch = require("node-fetch");
-
 export const handler = async (event) => {
   const { orderId, amount, customerName, customerEmail, customerPhone } = JSON.parse(event.body);
 
@@ -21,7 +19,6 @@ export const handler = async (event) => {
         customer_email: customerEmail,
         customer_phone: customerPhone,
       },
-      order_note: "Ecommerce Payment",
     }),
   });
 
