@@ -161,9 +161,9 @@ const Shop: React.FC = () => {
         const orderId = generatedOrderId;
 
         // 2️⃣ Open Cashfree payment popup
-        console.log('Cashfree object:', window.Cashfree);
-        const cf = new window.Cashfree();
-        console.log('Cashfree instance:', cf);
+        const cf = window.Cashfree({
+          mode: "sandbox"
+        });
         cf.checkout({
           paymentSessionId: paymentSessionId,
           redirectTarget: "_modal",
