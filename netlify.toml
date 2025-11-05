@@ -11,7 +11,3 @@
   node_bundler = "esbuild"
   external_node_modules = []
   included_files = []
-
-# CRITICAL: Use Node 18+
-[functions]
-  node_version = "18"
