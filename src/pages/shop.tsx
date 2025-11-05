@@ -93,7 +93,6 @@ const Shop: React.FC = () => {
     method: 'cashfree', // Default to Cashfree for multiple methods
   });
   const [orderId, setOrderId] = useState<string>('');
-  const [loading, setLoading] = useState(false);
 
   const addToCart = (product: typeof products[0]) => {
     setCart(prev => {
@@ -129,7 +128,6 @@ const Shop: React.FC = () => {
   };
 
   const handlePaymentSubmit = async () => {
-    setLoading(true);
     const totalAmount = getTotal();
     const generatedOrderId = "order_" + Date.now();
     setOrderId(generatedOrderId);
@@ -160,29 +158,6 @@ const Shop: React.FC = () => {
 
       if (data.payment_session_id) {
         const cashfree = new (window as any).Cashfree({ mode: "sandbox" }); // or 'production'
-
-        cashfree.on("payment_success", async () => {
-          console.log("✅ Payment succeeded, verifying...");
-
-          // 3️⃣ Verify payment through serverless function
-          const verifyRes = await fetch("/.netlify/functions/verifyPayment", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ order_id: generatedOrderId }),
-          });
-
-          const verifyData = await verifyRes.json();
-          if (verifyData.success) {
-            window.location.href = "/order-confirmation";
-          } else {
-            alert("Payment not verified. Please wait or contact support.");
-          }
-        });
-
-        cashfree.on("payment_failure", () => {
-          alert("❌ Payment failed or canceled.");
-        });
-
         cashfree.checkout({
           paymentSessionId: data.payment_session_id,
           redirectTarget: "_modal",
@@ -194,8 +169,6 @@ const Shop: React.FC = () => {
     } catch (error) {
       console.error("Payment submission error:", error);
       alert("An error occurred while processing your payment. Please try again.");
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -212,21 +185,23 @@ const Shop: React.FC = () => {
     const orderIdParam = urlParams.get('order_id');
     if (orderIdParam) {
       // Verify payment
-      const verifyPayment = async (orderId: string) => {
-        const res = await fetch("/.netlify/functions/verifyPayment", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ order_id: orderId }),
+      fetch("/.netlify/functions/verifyPayment", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ orderId: orderIdParam }),
+      })
+        .then(res => res.json())
+        .then(data => {
+          if (data.order_status === 'PAID') {
+            setCurrentStep('confirmation');
+          } else {
+            alert("Payment not completed. Please try again.");
+          }
+        })
+        .catch(error => {
+          console.error("Payment verification error:", error);
+          alert("Error verifying payment. Please contact support.");
         });
-        const result = await res.json();
-
-        if (result.success) {
-          window.location.href = "/order-success";
-        } else {
-          alert("Payment not verified yet!");
-        }
-      };
-      verifyPayment(orderIdParam);
     }
   }, []);
 
@@ -446,9 +421,9 @@ const Shop: React.FC = () => {
                 <Button variant="outline" onClick={() => setCurrentStep('checkout')}>
                   Back to Address
                 </Button>
-                <Button onClick={handlePaymentSubmit} disabled={loading}>
+                <Button onClick={handlePaymentSubmit}>
                   <CreditCard className="w-4 h-4 mr-2" />
-                  {loading ? "Processing..." : "Proceed to Payment"}
+                  Proceed to Payment
                 </Button>
               </div>
             </div>
