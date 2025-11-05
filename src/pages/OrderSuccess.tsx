@@ -48,11 +48,11 @@ const OrderSuccess: React.FC = () => {
             const res = await fetch("/.netlify/functions/verifyPayment", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ order_id: orderIdParam }),
+              body: JSON.stringify({ orderId: orderIdParam }),
             });
-            const result = await res.json();
+            const data = await res.json();
 
-            if (result.success && result.data.order_amount == parsedData.total) {
+            if (data.order_status === 'PAID' && data.order_amount == parsedData.total) {
               setVerificationStatus('success');
               // Clear localStorage after successful verification
               localStorage.removeItem('orderData');
