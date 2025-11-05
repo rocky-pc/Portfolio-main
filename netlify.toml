@@ -1,2 +1,17 @@
 [build]
   functions = "netlify/functions"
+  publish = "dist"
+
+[[redirects]]
+  from = "/.netlify/functions/*"
+  to = "/.netlify/functions/:splat"
+  status = 200
+
+[functions]
+  node_bundler = "esbuild"
+  external_node_modules = []
+  included_files = []
+
+# CRITICAL: Use Node 18+
+[functions]
+  node_version = "18"

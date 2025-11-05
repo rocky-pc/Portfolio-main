@@ -1,6 +1,5 @@
-import fetch from "node-fetch";
-
-export async function handler(event) {
+// netlify/functions/verifyPayment.js
+export const handler = async (event) => {
   try {
     const { orderId } = JSON.parse(event.body);
 
@@ -23,8 +22,8 @@ export async function handler(event) {
       statusCode: 200,
       body: JSON.stringify({
         success: data.order_status === "PAID",
-        message: data.order_status === "PAID" ? "Paid" : "Not paid",
-        data
+        message: data.order_status === "PAID" ? "Paid" : "Pending",
+        data,
       }),
     };
   } catch (err) {
@@ -33,4 +32,4 @@ export async function handler(event) {
       body: JSON.stringify({ success: false, error: err.message }),
     };
   }
-}
+};
