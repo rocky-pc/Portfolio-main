@@ -28,42 +28,42 @@ const products = [
   {
     id: 1,
     name: 'Tech Gadget Pro',
-    price: 10,
+    price: 1,
     image: TechGadgetProImage,
     description: 'Advanced tech gadget with cutting-edge features.',
   },
   {
     id: 2,
     name: 'Wireless Headphones',
-    price: 10,
+    price: 1,
     image: WirelessHeadphonesImage,
     description: 'Premium wireless headphones with noise cancellation.',
   },
   {
     id: 3,
     name: 'Smart Watch',
-    price: 10,
+    price: 1,
     image: SmartWatchImage,
     description: 'Feature-rich smart watch for fitness and connectivity.',
   },
   {
     id: 4,
     name: 'Laptop Stand',
-    price: 10,
+    price: 1,
     image: LaptopStandImage,
     description: 'Ergonomic laptop stand for better posture.',
   },
   {
     id: 5,
     name: 'Gaming Mouse',
-    price: 10,
+    price: 1,
     image: GamingMouseImage,
     description: 'High-precision gaming mouse with RGB lighting.',
   },
   {
     id: 6,
     name: 'Bluetooth Speaker',
-    price: 10,
+    price: 1,
     image: BluetoothSpeakerImage,
     description: 'Portable Bluetooth speaker with excellent sound quality.',
   },
@@ -149,7 +149,7 @@ const Shop: React.FC = () => {
     const data = await res.json();
 
     if (data.payment_session_id) {
-      const cashfree = new (window as any).Cashfree({ mode: "sandbox" }); // or 'production'
+      const cashfree = new (window as any).Cashfree({ mode: "production" }); // or 'production'
       cashfree.checkout({
         paymentSessionId: data.payment_session_id,
         redirectTarget: "_self",

@@ -1,7 +1,7 @@
 export const handler = async (event) => {
   const { orderId, amount, customerName, customerEmail, customerPhone } = JSON.parse(event.body);
 
-  const response = await fetch("https://sandbox.cashfree.com/pg/orders", {
+  const response = await fetch("https://api.cashfree.com/pg/orders", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
