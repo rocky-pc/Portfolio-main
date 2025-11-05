@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import TechGadgetProImage from '../images/Tech Gadget Pro.webp';
 import WirelessHeadphonesImage from '../images/Wireless Headphones.webp';
 import SmartWatchImage from '../images/Smart Watch.jpg';
@@ -19,7 +19,10 @@ import { ShoppingCart, Plus, Minus, Trash2, CreditCard, MapPin, CheckCircle } fr
 // Declare Cashfree globally
 declare global {
   interface Window {
-    Cashfree: any;
+    Cashfree: new (paymentSessionId: string) => {
+      on: (event: string, callback: () => void) => void;
+      open: () => void;
+    };
   }
 }
 
@@ -157,12 +160,35 @@ const Shop: React.FC = () => {
       const data = await res.json();
 
       if (data.payment_session_id) {
-        const cashfree = new (window as any).Cashfree({ mode: "sandbox" }); // or 'production'
-        cashfree.checkout({
-          paymentSessionId: data.payment_session_id,
-          redirectTarget: "_modal",
-          returnUrl: `${window.location.origin}/order-success?order_id=${generatedOrderId}`,
+        const paymentSessionId = data.payment_session_id;
+        const orderId = generatedOrderId;
+
+        // 2️⃣ Open Cashfree payment popup
+        const cashfree = new window.Cashfree(paymentSessionId);
+
+        cashfree.on("payment_success", async () => {
+          console.log("✅ Payment succeeded, verifying...");
+
+          // 3️⃣ Verify payment through serverless function
+          const verifyRes = await fetch("/.netlify/functions/verifyPayment", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ orderId: orderId }),
+          });
+
+          const verifyData = await verifyRes.json();
+          if (verifyData.success) {
+            setCurrentStep('confirmation');
+          } else {
+            alert("Payment not verified. Please wait or contact support.");
+          }
         });
+
+        cashfree.on("payment_failure", () => {
+          alert("❌ Payment failed or canceled.");
+        });
+
+        cashfree.open();
       } else {
         alert("Error: could not create payment order.");
       }
@@ -180,30 +206,7 @@ const Shop: React.FC = () => {
     setOrderId('');
   };
 
-  useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const orderIdParam = urlParams.get('order_id');
-    if (orderIdParam) {
-      // Verify payment
-      fetch("/.netlify/functions/verifyPayment", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ orderId: orderIdParam }),
-      })
-        .then(res => res.json())
-        .then(data => {
-          if (data.order_status === 'PAID') {
-            setCurrentStep('confirmation');
-          } else {
-            alert("Payment not completed. Please try again.");
-          }
-        })
-        .catch(error => {
-          console.error("Payment verification error:", error);
-          alert("Error verifying payment. Please contact support.");
-        });
-    }
-  }, []);
+
 
   return (
     <div className="min-h-screen bg-background text-foreground">

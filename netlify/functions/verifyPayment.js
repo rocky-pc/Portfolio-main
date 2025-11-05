@@ -1,18 +1,36 @@
-export const handler = async (event) => {
-  const { orderId } = JSON.parse(event.body);
+import fetch from "node-fetch";
 
-  const response = await fetch(`https://sandbox.cashfree.com/pg/orders/${orderId}`, {
-    method: "GET",
-    headers: {
-      "x-client-id": process.env.CASHFREE_APP_ID,
-      "x-client-secret": process.env.CASHFREE_SECRET_KEY,
-      "x-api-version": "2022-09-01",
-    },
-  });
+export async function handler(event) {
+  try {
+    const { orderId } = JSON.parse(event.body);
 
-  const data = await response.json();
-  return {
-    statusCode: 200,
-    body: JSON.stringify(data),
-  };
-};
+    const response = await fetch(`https://sandbox.cashfree.com/pg/orders/${orderId}`, {
+      method: "GET",
+      headers: {
+        "x-client-id": process.env.CASHFREE_APP_ID,
+        "x-client-secret": process.env.CASHFREE_SECRET_KEY,
+        "x-api-version": "2022-09-01",
+        "Content-Type": "application/json",
+      },
+    });
+
+    const data = await response.json();
+
+    if (data.order_status === "PAID") {
+      return {
+        statusCode: 200,
+        body: JSON.stringify({ success: true, message: "Payment verified", data }),
+      };
+    } else {
+      return {
+        statusCode: 400,
+        body: JSON.stringify({ success: false, message: "Payment not yet completed", data }),
+      };
+    }
+  } catch (err) {
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ success: false, error: err.message }),
+    };
+  }
+}
