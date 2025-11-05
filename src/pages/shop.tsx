@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import TechGadgetProImage from '../images/Tech Gadget Pro.webp';
 import WirelessHeadphonesImage from '../images/Wireless Headphones.webp';
 import SmartWatchImage from '../images/Smart Watch.jpg';
@@ -92,6 +92,7 @@ const Shop: React.FC = () => {
   const [payment, setPayment] = useState({
     method: 'cashfree', // Default to Cashfree for multiple methods
   });
+  const [orderId, setOrderId] = useState<string>('');
 
   const addToCart = (product: typeof products[0]) => {
     setCart(prev => {
@@ -128,13 +129,15 @@ const Shop: React.FC = () => {
 
   const handlePaymentSubmit = async () => {
     const totalAmount = getTotal();
+    const generatedOrderId = "order_" + Date.now();
+    setOrderId(generatedOrderId);
 
     try {
       const res = await fetch("/.netlify/functions/createOrder", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          orderId: "order_" + Date.now(),
+          orderId: generatedOrderId,
           amount: totalAmount,
           customerName: address.name,
           customerEmail: address.email,
@@ -148,7 +151,8 @@ const Shop: React.FC = () => {
         const cashfree = new (window as any).Cashfree({ mode: "production" }); // or 'production'
         cashfree.checkout({
           paymentSessionId: data.payment_session_id,
-          redirectTarget: "_self",
+          redirectTarget: "_modal",
+          returnUrl: `${window.location.origin}/shop?order_id=${generatedOrderId}`,
         });
       } else {
         alert("Error: could not create payment order.");
@@ -164,7 +168,33 @@ const Shop: React.FC = () => {
     setCurrentStep('products');
     setAddress({ name: '', email: '', phone: '', street: '', city: '', state: '', zip: '' });
     setPayment({ method: 'cashfree' });
+    setOrderId('');
   };
+
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const orderIdParam = urlParams.get('order_id');
+    if (orderIdParam) {
+      // Verify payment
+      fetch("/.netlify/functions/verifyPayment", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ orderId: orderIdParam }),
+      })
+        .then(res => res.json())
+        .then(data => {
+          if (data.order_status === 'PAID') {
+            setCurrentStep('confirmation');
+          } else {
+            alert("Payment not completed. Please try again.");
+          }
+        })
+        .catch(error => {
+          console.error("Payment verification error:", error);
+          alert("Error verifying payment. Please contact support.");
+        });
+    }
+  }, []);
 
   return (
     <div className="min-h-screen bg-background text-foreground">
