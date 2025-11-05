@@ -17,6 +17,11 @@ const Navigation = () => {
     { id: 'contact', label: 'Contact', icon: MessageCircle },
   ];
 
+  // Navigate to shop page on click of shop button
+  const handleShopClick = () => {
+    window.location.href = '/shop';
+  };
+
   useEffect(() => {
     const handleScroll = () => {
       const sections = navItems.map(item => document.getElementById(item.id));
@@ -68,6 +73,16 @@ const Navigation = () => {
                 </button>
               </li>
             ))}
+            <li>
+              <button
+                onClick={handleShopClick}
+                className={`text-sm font-medium transition-colors hover:text-primary ${
+                  activeSection === 'shop' ? 'text-primary' : 'text-muted-foreground'
+                }`}
+              >
+Shop
+              </button>
+            </li>
           </ul>
         </div>
       </nav>

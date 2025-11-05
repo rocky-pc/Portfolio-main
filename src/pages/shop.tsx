@@ -13,8 +13,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 // import { GradientButton } from '@/components/ui/gradient-button';
-import { ShoppingCart, Plus, Minus, Trash2, CreditCard, MapPin, CheckCircle } from 'lucide-react';
+import { ShoppingCart, Plus, Minus, Trash2, CreditCard, ArrowRight, CheckCircle } from 'lucide-react';
 
 // Declare Cashfree globally
 declare global {
@@ -27,7 +28,7 @@ declare global {
 const products = [
   {
     id: 1,
-    name: 'Tech Gadget Pro',
+    name: 'Gaming Pad',
     price: 1,
     image: TechGadgetProImage,
     description: 'Advanced tech gadget with cutting-edge features.',
@@ -75,11 +76,12 @@ interface CartItem {
   price: number;
   quantity: number;
   image: string;
+  description: string;
 }
 
 const Shop: React.FC = () => {
   const [cart, setCart] = useState<CartItem[]>([]);
-  const [currentStep, setCurrentStep] = useState<'products' | 'checkout' | 'payment' | 'confirmation'>('products');
+  const [currentStep, setCurrentStep] = useState<'products' | 'Shipping' | 'Shipping' | 'order-summary' | 'payment' | 'confirmation'>('products');
   const [address, setAddress] = useState({
     name: '',
     email: '',
@@ -93,6 +95,9 @@ const Shop: React.FC = () => {
     method: 'cashfree', // Default to Cashfree for multiple methods
   });
   const [orderId, setOrderId] = useState<string>('');
+  const [popupOpen, setPopupOpen] = useState(false);
+  const [popupMessage, setPopupMessage] = useState('');
+  const [cartBlink, setCartBlink] = useState(false);
 
   const addToCart = (product: typeof products[0]) => {
     setCart(prev => {
@@ -104,8 +109,25 @@ const Shop: React.FC = () => {
       }
       return [...prev, { ...product, quantity: 1 }];
     });
+    setPopupMessage(`${product.name} added to cart!`);
+    setPopupOpen(true);
+    setCartBlink(true);
+    setTimeout(() => setCartBlink(false), 400);
+    setTimeout(() => setPopupOpen(false), 2000);
   };
-
+  const buynow = (product: typeof products[0]) => {
+    setCart(prev => {
+      const existing = prev.find(item => item.id === product.id);
+      if (existing) {
+        return prev.map(item =>
+          item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item
+        );
+      }
+      return [...prev, { ...product, quantity: 1 }];
+    });
+    setCartBlink(true);
+    setTimeout(() => setCartBlink(false), 400);
+  };
   const updateQuantity = (id: number, quantity: number) => {
     if (quantity <= 0) {
       removeFromCart(id);
@@ -124,7 +146,7 @@ const Shop: React.FC = () => {
 
   const handleAddressSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setCurrentStep('payment');
+    setCurrentStep('order-summary');
   };
 
 const handlePaymentSubmit = async () => {
@@ -159,7 +181,7 @@ const handlePaymentSubmit = async () => {
     const cashfree = window.Cashfree({ mode: "production" });
 
     cashfree
-      .checkout({
+      .Shipping({
         paymentSessionId,
         redirectTarget: "_modal",           // <-- opens in a popup
         returnUrl,                          // ignored for _modal, we handle it ourselves
@@ -193,14 +215,14 @@ const handlePaymentSubmit = async () => {
 
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div >
       {/* Header */}
       <header className="glass sticky top-0 z-50 border-b border-border/30">
         <div className="container mx-auto px-6 py-4 flex justify-between items-center">
           <h1 className="text-2xl font-bold gradient-text">Tech Shop</h1>
           <Sheet>
             <SheetTrigger asChild>
-              <Button variant="ghost" className="relative">
+              <Button variant="ghost" className={`relative ${cartBlink ? 'animate-pulse' : 'green-500'}`}>
                 <ShoppingCart className="w-6 h-6" />
                 {cart.length > 0 && (
                   <Badge className="absolute -top-2 -right-2 bg-primary text-primary-foreground">
@@ -256,7 +278,7 @@ const handlePaymentSubmit = async () => {
                     <div className="flex justify-between items-center">
                       <span className="font-medium">Total: Rs {getTotal().toFixed(2)}</span>
                       <SheetTrigger asChild>
-                        <Button onClick={() => setCurrentStep('checkout')}>
+                        <Button onClick={() => setCurrentStep('Shipping')}>
                           Checkout
                         </Button>
                       </SheetTrigger>
@@ -270,7 +292,7 @@ const handlePaymentSubmit = async () => {
       </header>
 
       {/* Main Content */}
-      <main className="container mx-auto px-6 py-8">
+      <main className="container mx-full px-6 py-8" style={{ paddingTop: '2rem', paddingBottom: '19.5rem' }}>
         {currentStep === 'products' && (
           <>
             <h2 className="text-3xl font-bold mb-8 gradient-text">Our Products</h2>
@@ -283,11 +305,16 @@ const handlePaymentSubmit = async () => {
                     <CardDescription>{product.description}</CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <div className="flex justify-between items-center">
+                    <div className="flex justify-between items-center gap-2">
                       <span className="text-2xl font-bold gradient-text">Rs {product.price}</span>
-                      <Button onClick={() => addToCart(product)}>
-                        Add to Cart
-                      </Button>
+                      <div className="flex gap-2">
+                        <Button onClick={() => addToCart(product)}>
+                          Add to Cart
+                        </Button>
+                        <Button size="default" variant="outline" onClick={() => {setCurrentStep('Shipping'); buynow(product); }}>
+                          ⚡ Buy Now
+                        </Button>
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
@@ -296,7 +323,7 @@ const handlePaymentSubmit = async () => {
           </>
         )}
 
-        {currentStep === 'checkout' && (
+        {currentStep === 'Shipping' && (
           <div className="max-w-2xl mx-auto">
             <h2 className="text-3xl font-bold mb-8 gradient-text">Shipping Address</h2>
             <form onSubmit={handleAddressSubmit} className="space-y-6">
@@ -373,11 +400,66 @@ const handlePaymentSubmit = async () => {
                   Back to Products
                 </Button>
                 <Button type="submit">
-                  <MapPin className="w-4 h-4 mr-2" />
-                  Continue to Payment
+                  <ArrowRight className="w-4 h-4 mr-2" />
+                  Continue
                 </Button>
               </div>
             </form>
+          </div>
+        )}
+
+        {/* Order Summary Step */}
+        {currentStep === 'order-summary' && (
+          <div className="max-w-4xl mx-auto">
+            <h2 className="text-3xl font-bold mb-8 gradient-text text-center">Order Summary</h2>
+            <div className="glass p-8 rounded-lg space-y-6">
+              {/* Order Details */}
+              <div className="space-y-4">
+                <h3 className="text-xl font-semibold">Your Order</h3>
+                {cart.map(item => (
+                  <div key={item.id} className="flex items-center space-x-4 p-4 border border-border/30 rounded-lg">
+                    <img src={item.image} alt={item.name} className="w-16 h-16 object-cover rounded" />
+                    <div className="flex-1">
+                      <h4 className="font-medium">{item.name}</h4>
+                      <p className="text-sm text-muted-foreground">{item.description}</p>
+                      <p className="text-sm text-muted-foreground">Quantity: {item.quantity}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-semibold">Rs {(item.price * item.quantity).toFixed(2)}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Shipping Address */}
+              <div className="space-y-4">
+                <h3 className="text-xl font-semibold">Shipping Address</h3>
+                <div className="p-4 border border-border/30 rounded-lg">
+                  <p className="font-medium">{address.name}</p>
+                  <p>{address.street}</p>
+                  <p>{address.city}, {address.state} {address.zip}</p>
+                  <p>{address.email}</p>
+                  <p>{address.phone}</p>
+                </div>
+              </div>
+
+              {/* Total */}
+              <div className="flex justify-between items-center pt-4 border-t border-border/30">
+                <span className="text-xl font-semibold">Total Amount:</span>
+                <span className="text-2xl font-bold gradient-text">Rs {getTotal().toFixed(2)}</span>
+              </div>
+
+              {/* Continue to Payment Button */}
+              <div className="flex justify-between">
+                <Button variant="outline" onClick={() => setCurrentStep('Shipping')}>
+                  Back to Shipping
+                </Button>
+                <Button onClick={() => setCurrentStep('payment')} className="px-8 py-3">
+                  <CreditCard className="w-5 h-5 mr-2" />
+                  Continue to Payment
+                </Button>
+              </div>
+            </div>
           </div>
         )}
 
@@ -391,7 +473,7 @@ const handlePaymentSubmit = async () => {
                   You can pay using UPI, Card, or Net Banking through our secure payment gateway.
                 </p>
                 <div className="flex items-center space-x-4">
-                  <div className="flex items-center space-x-2">
+                  {/* <div className="flex items-center space-x-2">
                     <input
                       type="radio"
                       id="cashfree"
@@ -401,12 +483,12 @@ const handlePaymentSubmit = async () => {
                       onChange={(e) => setPayment({ method: e.target.value })}
                     />
                     <Label htmlFor="cashfree">Cashfree (UPI, Card, Net Banking)</Label>
-                  </div>
+                  </div> */}
                 </div>
               </div>
               <div className="flex justify-between">
-                <Button variant="outline" onClick={() => setCurrentStep('checkout')}>
-                  Back to Address
+                <Button variant="outline" onClick={() => setCurrentStep('order-summary')}>
+                  Back to Order Summary
                 </Button>
                 <Button onClick={handlePaymentSubmit}>
                   <CreditCard className="w-4 h-4 mr-2" />
@@ -444,6 +526,16 @@ const handlePaymentSubmit = async () => {
           </div>
         )}
       </main>
+
+      {/* Popup Dialog */}
+      <Dialog open={popupOpen} onOpenChange={setPopupOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Item Added</DialogTitle>
+            <DialogDescription>{popupMessage}</DialogDescription>
+          </DialogHeader>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
