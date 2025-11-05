@@ -222,9 +222,8 @@ const handlePaymentSubmit = async () => {
       </div>
       {/* Header */}
       <header className=" top-0 z-50">
-        
         <div className="container mx-auto px-8 py-4 flex justify-center items-center">
-          <h1 className=" text-4xl font-bold gradient-text text-center">Tech Shop</h1>
+          {currentStep === 'products' && <h1 className=" text-4xl font-bold gradient-text text-center">Tech Shop</h1>}
         </div>
       </header>
 
