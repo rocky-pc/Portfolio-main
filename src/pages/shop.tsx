@@ -164,11 +164,24 @@ const Shop: React.FC = () => {
         const cf = window.Cashfree({
           mode: "sandbox"
         });
-        cf.checkout({
+        const dropin = cf.checkout({
           paymentSessionId: paymentSessionId,
           redirectTarget: "_modal",
           returnUrl: `${window.location.origin}/order-success?order_id=${orderId}&verify=true`,
+          onVerify: (orderID) => {
+            // Handle successful payment verification
+            window.location.href = `/order-success?order_id=${orderID}&verify=true`;
+          },
         });
+
+        if (dropin.redirect) {
+          // if the redirectTarget is not _modal
+          console.log("redirecting to", dropin.redirect)
+        }
+        if (dropin.error) {
+          // handle error
+          console.error(dropin.error)
+        }
       } else {
         alert("Error: could not create payment order.");
       }
