@@ -14,7 +14,7 @@ export const handler = async (event) => {
       order_amount: amount,
       order_currency: "INR",
       customer_details: {
-        customer_id: customerPhone,
+        customer_id: `cust_${customerPhone}`,
         customer_name: customerName,
         customer_email: customerEmail,
         customer_phone: customerPhone,
@@ -23,6 +23,14 @@ export const handler = async (event) => {
   });
 
   const data = await response.json();
+
+  if (!response.ok) {
+    return {
+      statusCode: 400,
+      body: JSON.stringify({ error: data }),
+    };
+  }
+
   return {
     statusCode: 200,
     body: JSON.stringify(data),

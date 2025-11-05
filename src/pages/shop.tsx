@@ -127,69 +127,68 @@ const Shop: React.FC = () => {
     setCurrentStep('payment');
   };
 
-  const handlePaymentSubmit = async () => {
-    const totalAmount = getTotal();
-    const generatedOrderId = "order_" + Date.now();
-    setOrderId(generatedOrderId);
+const handlePaymentSubmit = async () => {
+  const totalAmount = getTotal();
+  const generatedOrderId = "order_" + Date.now();
+  setOrderId(generatedOrderId);
 
-    // Store order data in localStorage before payment
-    const orderData = {
-      cart,
-      address,
-      orderId: generatedOrderId,
-      total: totalAmount,
-    };
-    localStorage.setItem('orderData', JSON.stringify(orderData));
+  const orderData = {
+    cart,
+    address,
+    orderId: generatedOrderId,
+    total: totalAmount,
+  };
+  localStorage.setItem('orderData', JSON.stringify(orderData));
 
-    try {
-      const res = await fetch("/.netlify/functions/createOrder", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          orderId: generatedOrderId,
-          amount: totalAmount,
-          customerName: address.name,
-          customerEmail: address.email,
-          customerPhone: address.phone,
-        }),
+  try {
+    const res = await fetch("/.netlify/functions/createOrder", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        orderId: generatedOrderId,
+        amount: totalAmount,
+        customerName: address.name,
+        customerEmail: address.email,
+        customerPhone: address.phone,
+      }),
+    });
+
+    const data = await res.json();
+
+    if (data.payment_session_id) {
+      const paymentSessionId = data.payment_session_id;
+      const returnUrl = `${window.location.origin}/order-success`;
+
+      // Initialize Cashfree
+      const cashfree = window.Cashfree({
+        mode: "sandbox"
       });
 
-      const data = await res.json();
-
-      if (data.payment_session_id) {
-        const paymentSessionId = data.payment_session_id;
-        const orderId = generatedOrderId;
-
-        // 2️⃣ Open Cashfree payment popup
-        const cf = window.Cashfree({
-          mode: "sandbox"
-        });
-        const dropin = cf.checkout({
-          paymentSessionId: paymentSessionId,
-          redirectTarget: "_self",
-          returnUrl: `${window.location.origin}/order-success?order_id=${orderId}&verify=true`,
-          onVerify: (orderID) => {
-            // Handle successful payment verification
-            window.location.href = `/order-success?order_id=${orderID}&verify=true`;
-          },
-        });
-
-        if (dropin.redirect) {
-          // if the redirectTarget is not _modal
-          console.log("redirecting to", dropin.redirect)
+      // Use promise-based checkout
+      cashfree.checkout({
+        paymentSessionId: paymentSessionId,
+      }).then((result) => {
+        if (result.error) {
+          console.error("Payment error:", result.error);
+          alert("Payment failed. Please try again.");
+        } else if (result.paymentDetails) {
+          // Payment successful → redirect manually with order_id
+          const successUrl = `${returnUrl}?order_id=${generatedOrderId}&verify=true`;
+          window.location.href = successUrl;
         }
-        if (dropin.error) {
-          // handle error
-          console.error(dropin.error)
-        }
-      } else {
-        alert("Error: could not create payment order.");
-      }
-    } catch (error) {
-      console.error("Payment submission error:", error);
-      alert("An error occurred while processing your payment. Please try again.");
+      }).catch((err) => {
+        console.error("Checkout error:", err);
+        alert("Payment processing failed.");
+      });
+
+    } else {
+      alert("Failed to create payment session.");
     }
-  };
+  } catch (error) {
+    console.error("Payment error:", error);
+    alert("An error occurred. Please try again.");
+  }
+};
 
   const resetOrder = () => {
     setCart([]);

@@ -10,23 +10,23 @@ export async function handler(event) {
         "x-client-id": process.env.CASHFREE_APP_ID,
         "x-client-secret": process.env.CASHFREE_SECRET_KEY,
         "x-api-version": "2022-09-01",
-        "Content-Type": "application/json",
       },
     });
 
     const data = await response.json();
 
-    if (data.order_status === "PAID") {
-      return {
-        statusCode: 200,
-        body: JSON.stringify({ success: true, message: "Payment verified", data }),
-      };
-    } else {
-      return {
-        statusCode: 400,
-        body: JSON.stringify({ success: false, message: "Payment not yet completed", data }),
-      };
+    if (!response.ok) {
+      return { statusCode: 400, body: JSON.stringify({ success: false, data }) };
     }
+
+    return {
+      statusCode: 200,
+      body: JSON.stringify({
+        success: data.order_status === "PAID",
+        message: data.order_status === "PAID" ? "Paid" : "Not paid",
+        data
+      }),
+    };
   } catch (err) {
     return {
       statusCode: 500,

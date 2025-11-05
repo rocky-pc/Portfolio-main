@@ -31,45 +31,47 @@ const OrderSuccess: React.FC = () => {
   const [orderData, setOrderData] = useState<OrderData | null>(null);
   const [verificationStatus, setVerificationStatus] = useState<'verifying' | 'success' | 'failed'>('verifying');
 
-  useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const orderIdParam = urlParams.get('order_id');
-    const verifyParam = urlParams.get('verify');
+useEffect(() => {
+  const urlParams = new URLSearchParams(window.location.search);
+  const orderIdParam = urlParams.get('order_id');
+  const verifyParam = urlParams.get('verify');
 
-    if (orderIdParam && verifyParam === 'true') {
-      // Retrieve order data from localStorage
-      const storedData = localStorage.getItem('orderData');
-      if (storedData) {
-        const parsedData: OrderData = JSON.parse(storedData);
-        setOrderData(parsedData);
+  if (!orderIdParam || verifyParam !== 'true') {
+    setVerificationStatus('failed');
+    return;
+  }
 
-        // Verify payment
-        fetch("/.netlify/functions/verifyPayment", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ orderId: orderIdParam }),
-        })
-          .then(res => res.json())
-          .then(data => {
-            if (data.success) {
-              setVerificationStatus('success');
-              // Clear localStorage after successful verification
-              localStorage.removeItem('orderData');
-            } else {
-              setVerificationStatus('failed');
-            }
-          })
-          .catch(error => {
-            console.error("Payment verification error:", error);
-            setVerificationStatus('failed');
-          });
+  const storedData = localStorage.getItem('orderData');
+  if (!storedData) {
+    setVerificationStatus('failed');
+    return;
+  }
+
+  const parsedData: OrderData = JSON.parse(storedData);
+  if (parsedData.orderId !== orderIdParam) {
+    setVerificationStatus('failed');
+    return;
+  }
+
+  setOrderData(parsedData);
+
+  // Verify payment
+  fetch("/.netlify/functions/verifyPayment", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ orderId: orderIdParam }),
+  })
+    .then(res => res.json())
+    .then(data => {
+      if (data.success) {
+        setVerificationStatus('success');
+        localStorage.removeItem('orderData'); // Clear after success
       } else {
         setVerificationStatus('failed');
       }
-    } else {
-      setVerificationStatus('failed');
-    }
-  }, []);
+    })
+    .catch(() => setVerificationStatus('failed'));
+}, []);
 
   if (verificationStatus === 'verifying') {
     return (
