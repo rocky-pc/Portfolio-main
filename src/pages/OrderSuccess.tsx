@@ -46,27 +46,32 @@ const OrderSuccess: React.FC = () => {
         customer_name: orderData.address.name,
         order_id: orderData.orderId,
         order_date: new Date().toLocaleDateString(),
-        shipping_address: `${orderData.address.street}, ${orderData.address.city}, ${orderData.address.state} ${orderData.address.zip}`,
-        customer_phone: orderData.address.phone,
-        order_items: orderData.cart.map(item =>
-          `${item.name} x${item.quantity} - Rs ${(item.price * item.quantity).toFixed(2)}`
-        ).join('\n'),
-        order_total: `Rs ${orderData.total.toFixed(2)}`,
-      };
+      shipping_address: `${orderData.address.street}, ${orderData.address.city}, ${orderData.address.state} ${orderData.address.zip}`,
+      customer_phone: orderData.address.phone,
 
-      await emailjs.send(
-        "service_4ldbz1t",
-        "template_eubejzo",
-        templateParams
-      );
+      // ONE STRING – each item on its own line (HTML <br>)
+      order_items: orderData.cart
+        .map(
+          item =>
+            `${item.name} ×${item.quantity} — Rs ${(item.price * item.quantity).toFixed(2)}`
+        )
+        .join('<br>'),
 
-      setEmailSent(true);
-      console.log('Order confirmation email sent successfully');
-    } catch (error) {
-      console.error('Failed to send order confirmation email:', error);
-      // Don't set verification status to failed if email fails, as payment was successful
-    }
-  };
+      order_total: `Rs ${orderData.total.toFixed(2)}`,
+    };
+
+    await emailjs.send(
+      "service_4ldbz1t",
+      "template_eubejzo",   // <-- your existing template ID
+      templateParams
+    );
+
+    setEmailSent(true);
+    console.log('Order confirmation email sent');
+  } catch (error) {
+    console.error('Failed to send email:', error);
+  }
+};
 
 useEffect(() => {
   const urlParams = new URLSearchParams(window.location.search);
