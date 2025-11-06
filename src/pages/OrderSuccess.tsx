@@ -3,6 +3,7 @@ import { CheckCircle, Home } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
+import emailjs from '@emailjs/browser';
 
 interface CartItem {
   id: number;
@@ -30,6 +31,42 @@ interface OrderData {
 const OrderSuccess: React.FC = () => {
   const [orderData, setOrderData] = useState<OrderData | null>(null);
   const [verificationStatus, setVerificationStatus] = useState<'verifying' | 'success' | 'failed'>('verifying');
+  const [emailSent, setEmailSent] = useState<boolean>(false);
+
+  // Initialize EmailJS
+  useEffect(() => {
+    emailjs.init("qAUdYmAh0F1iG2kZM");
+  }, []);
+
+  // Function to send order confirmation email
+  const sendOrderEmail = async (orderData: OrderData) => {
+    try {
+      const templateParams = {
+        to_email: orderData.address.email,
+        customer_name: orderData.address.name,
+        order_id: orderData.orderId,
+        order_date: new Date().toLocaleDateString(),
+        shipping_address: `${orderData.address.street}, ${orderData.address.city}, ${orderData.address.state} ${orderData.address.zip}`,
+        customer_phone: orderData.address.phone,
+        order_items: orderData.cart.map(item =>
+          `${item.name} x${item.quantity} - Rs ${(item.price * item.quantity).toFixed(2)}`
+        ).join('\n'),
+        order_total: `Rs ${orderData.total.toFixed(2)}`,
+      };
+
+      await emailjs.send(
+        "service_4ldbz1t",
+        "template_eubejzo",
+        templateParams
+      );
+
+      setEmailSent(true);
+      console.log('Order confirmation email sent successfully');
+    } catch (error) {
+      console.error('Failed to send order confirmation email:', error);
+      // Don't set verification status to failed if email fails, as payment was successful
+    }
+  };
 
 useEffect(() => {
   const urlParams = new URLSearchParams(window.location.search);
@@ -62,10 +99,15 @@ useEffect(() => {
     body: JSON.stringify({ orderId: orderIdParam }),
   })
     .then(res => res.json())
-    .then(data => {
+    .then(async (data) => {
       if (data.success) {
         setVerificationStatus('success');
         localStorage.removeItem('orderData'); // Clear after success
+
+        // Send order confirmation email
+        if (parsedData) {
+          await sendOrderEmail(parsedData);
+        }
       } else {
         setVerificationStatus('failed');
       }
@@ -107,6 +149,7 @@ useEffect(() => {
           <h2 className="text-3xl font-bold mb-4 gradient-text">Order Confirmed!</h2>
           <p className="text-muted-foreground mb-8">
             Thank you for your purchase. Your order has been successfully placed and payment verified.
+            {emailSent && <span className="block mt-2 text-green-600 font-medium">✓ Order confirmation email sent to {orderData.address.email}</span>}
           </p>
           <Card className="glass mb-8">
             <CardHeader>

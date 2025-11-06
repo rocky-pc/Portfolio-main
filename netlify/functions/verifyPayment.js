@@ -3,7 +3,7 @@ export const handler = async (event) => {
   try {
     const { orderId } = JSON.parse(event.body);
 
-    const response = await fetch(`https://api.cashfree.com/pg/orders/${orderId}`, {
+    const response = await fetch(`https://sandbox.cashfree.com/pg/orders/${orderId}`, {
       method: "GET",
       headers: {
         "x-client-id": process.env.CASHFREE_APP_ID,
