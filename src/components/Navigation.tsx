@@ -1,12 +1,16 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Menu, X, Home, User, Briefcase, Code, Settings, MessageCircle, Layers, ShoppingCart } from 'lucide-react';
+import { Menu, X, Home, User, Briefcase, Code, Settings, MessageCircle, Layers, ShoppingCart, LogOut, Package } from 'lucide-react';
 import Auth from './Auth';
+import { auth } from '../firebaseConfig';
+import { onAuthStateChanged, signOut } from 'firebase/auth';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 
 const Navigation = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [activeSection, setActiveSection] = useState('hero');
   const [scrollProgress, setScrollProgress] = useState(0);
+  const [currentUser, setCurrentUser] = useState<any>(null);
 
   const navItems = [
     { id: 'hero', label: 'Home', icon: Home },
@@ -21,6 +25,11 @@ const Navigation = () => {
 
 
   useEffect(() => {
+    // Listen to authentication state changes
+    const unsubscribeAuth = onAuthStateChanged(auth, (user) => {
+      setCurrentUser(user);
+    });
+
     const handleScroll = () => {
       const sections = navItems.map(item => document.getElementById(item.id));
       const scrollPosition = window.scrollY + 100;
@@ -42,7 +51,10 @@ const Navigation = () => {
 
     window.addEventListener('scroll', handleScroll);
     handleScroll(); // Initial call
-    return () => window.removeEventListener('scroll', handleScroll);
+    return () => {
+      unsubscribeAuth();
+      window.removeEventListener('scroll', handleScroll);
+    };
   }, []);
 
   const scrollToSection = (id: string) => {
@@ -72,14 +84,51 @@ const Navigation = () => {
               </li>
             ))}
             <li>
-              <Auth>
-                <button
-                  className={`text-sm font-medium transition-colors hover:text-primary ${
-                    activeSection === 'shop' ? 'text-primary' : 'text-muted-foreground'
-                  }`}
-                >Shop Login
-                </button>
-              </Auth>
+              {currentUser ? (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      className="text-sm font-medium h-7"
+                    >
+                      <User className="w-4 h-4 mr-2" />
+                      {currentUser.displayName || currentUser.email?.split('@')[0] || 'User'}
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="glass" align="end">
+                    <div className="px-2 py-1.5 text-sm font-medium">
+                      {currentUser.email}
+                    </div>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={() => window.location.href = '/orders'}>
+                      <Package className="w-4 h-4 mr-2" />
+                      My Orders
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => window.location.href = '/shop'}>
+                      <ShoppingCart className="w-4 h-4 mr-2" />
+                      Shop
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      onClick={() => signOut(auth)}
+                      className="text-red-600 focus:text-red-600"
+                    >
+                      <LogOut className="w-4 h-4 mr-2" />
+                      Logout
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              ) : (
+                <Auth>
+                  <button
+                    className={`text-sm font-medium transition-colors hover:text-primary ${
+                      activeSection === 'shop' ? 'text-primary' : 'text-muted-foreground'
+                    }`}
+                  >
+                    Shop
+                  </button>
+                </Auth>
+              )}
             </li>
           </ul>
         </div>
@@ -115,16 +164,46 @@ const Navigation = () => {
                 </li>
               ))}
               <li>
-                <Auth>
-                  <button
-                    className={`flex items-center gap-3 w-full text-left p-2 rounded-lg transition-colors hover:bg-card-glass/50 ${
-                      activeSection === 'shop' ? 'text-primary bg-primary/10' : 'text-muted-foreground'
-                    }`}
-                  >
-                    <ShoppingCart size={18} />
-                    <span className="font-medium">Shop Login</span>
-                  </button>
-                </Auth>
+                {currentUser ? (
+                  <div className="space-y-2">
+                    <div className="px-3 py-2 text-sm font-medium text-center bg-primary/10 rounded-lg">
+                      <User className="w-4 h-4 inline mr-2" />
+                      {currentUser.displayName || currentUser.email?.split('@')[0] || 'User'}
+                    </div>
+                    <button
+                      onClick={() => { window.location.href = '/orders'; setIsOpen(false); }}
+                      className="flex items-center gap-3 w-full text-left p-2 rounded-lg transition-colors hover:bg-card-glass/50 text-muted-foreground"
+                    >
+                      <Package size={18} />
+                      <span className="font-medium">My Orders</span>
+                    </button>
+                    <button
+                      onClick={() => { window.location.href = '/shop'; setIsOpen(false); }}
+                      className="flex items-center gap-3 w-full text-left p-2 rounded-lg transition-colors hover:bg-card-glass/50 text-muted-foreground"
+                    >
+                      <ShoppingCart size={18} />
+                      <span className="font-medium">Shop</span>
+                    </button>
+                    <button
+                      onClick={() => { signOut(auth); setIsOpen(false); }}
+                      className="flex items-center gap-3 w-full text-left p-2 rounded-lg transition-colors hover:bg-card-glass/50 text-red-600"
+                    >
+                      <LogOut size={18} />
+                      <span className="font-medium">Logout</span>
+                    </button>
+                  </div>
+                ) : (
+                  <Auth>
+                    <button
+                      className={`flex items-center gap-3 w-full text-left p-2 rounded-lg transition-colors hover:bg-card-glass/50 ${
+                        activeSection === 'shop' ? 'text-primary bg-primary/10' : 'text-muted-foreground'
+                      }`}
+                    >
+                      <ShoppingCart size={18} />
+                      <span className="font-medium">Shop</span>
+                    </button>
+                  </Auth>
+                )}
               </li>
             </ul>
           </div>

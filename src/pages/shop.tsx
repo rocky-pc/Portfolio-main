@@ -313,11 +313,7 @@ const handlePaymentSubmit = async () => {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent>
                   <DropdownMenuItem onClick={() => {
-                    if (cart.length > 0) {
-                      setCurrentStep('order-summary');
-                    } else {
-                      alert('No orders to show');
-                    }
+                      navigate('/orders');
                   }}>
                     Show Orders
                   </DropdownMenuItem>
