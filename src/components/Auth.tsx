@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { auth } from "../firebaseConfig";
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "firebase/auth";
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -64,6 +64,22 @@ export default function Auth({ children }: AuthProps) {
     setUser(null);
   };
 
+  const handleGoogleSignIn = async () => {
+    try {
+      const provider = new GoogleAuthProvider();
+      await signInWithPopup(auth, provider);
+      setUser(auth.currentUser);
+      setIsOpen(false);
+      moveToShop();
+    } catch (error) {
+      toast({
+        title: "Google sign-in failed",
+        description: (error as Error).message,
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
@@ -95,6 +111,9 @@ export default function Auth({ children }: AuthProps) {
                 onChange={(e) => setPassword(e.target.value)}
               />
             </div>
+            <Button onClick={handleGoogleSignIn} variant="outline" className="w-full">
+              Sign in with Google
+            </Button>
             <div className="flex gap-2">
               <Button onClick={handleSignup} className="flex-1">
                 Sign Up
