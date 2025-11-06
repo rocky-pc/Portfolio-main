@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
 interface AuthProps {
-  children: React.ReactNode;
+  children?: React.ReactNode;
 }
 
 export default function Auth({ children }: AuthProps) {
@@ -16,19 +16,21 @@ export default function Auth({ children }: AuthProps) {
   const [user, setUser] = useState(auth.currentUser);
   const [isOpen, setIsOpen] = useState(false);
 
+  const moveToShop = () => {
+    setIsOpen(false);
+    window.location.href = "/shop";
+  };
+
   const handleSignup = async () => {
     try {
       await createUserWithEmailAndPassword(auth, email, password);
       setUser(auth.currentUser);
       setIsOpen(false);
       alert("Account created!");
+      moveToShop();
     } catch (error) {
       alert("Signup failed: " + (error as Error).message);
     }
-  };
-  const moveToShop = () => {
-    setIsOpen(false);
-    window.location.href = "/shop";
   };
 
   const handleLogin = async () => {
@@ -36,7 +38,6 @@ export default function Auth({ children }: AuthProps) {
       await signInWithEmailAndPassword(auth, email, password);
       setUser(auth.currentUser);
       setIsOpen(false);
-      alert("Logged in!");
       moveToShop();
     } catch (error) {
       alert("Login failed: " + (error as Error).message);
@@ -103,4 +104,3 @@ export default function Auth({ children }: AuthProps) {
     </Dialog>
   );
 }
-

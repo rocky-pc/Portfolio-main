@@ -6,6 +6,7 @@ import { Separator } from '@/components/ui/separator';
 import emailjs from '@emailjs/browser';
 import { db, auth } from '../firebaseConfig';
 import { addDoc, collection } from 'firebase/firestore';
+import { onAuthStateChanged } from 'firebase/auth';
 
 interface CartItem {
   id: number;
@@ -34,23 +35,43 @@ const OrderSuccess: React.FC = () => {
   const [orderData, setOrderData] = useState<OrderData | null>(null);
   const [verificationStatus, setVerificationStatus] = useState<'verifying' | 'success' | 'failed'>('verifying');
   const [emailSent, setEmailSent] = useState<boolean>(false);
+  const [orderSaved, setOrderSaved] = useState<boolean>(false);
+  const [currentUser, setCurrentUser] = useState<any>(null);
+
+  // Listen to authentication state changes
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      console.log('Auth state changed:', user ? 'User logged in' : 'No user');
+      setCurrentUser(user);
+    });
+    return () => unsubscribe();
+  }, []);
 
   // Initialize EmailJS
   useEffect(() => {
     emailjs.init("qAUdYmAh0F1iG2kZM");
   }, []);
 
+  // Save order when verification succeeds and user is authenticated
+  useEffect(() => {
+    if (verificationStatus === 'success' && currentUser && orderData && !orderSaved) {
+      console.log('Conditions met: saving order to Firestore');
+      saveOrderToFirestore(orderData);
+    }
+  }, [verificationStatus, currentUser, orderData, orderSaved]);
+
   // Function to save order to Firestore
   const saveOrderToFirestore = async (orderData: OrderData) => {
     try {
-      const user = auth.currentUser;
-      if (!user) {
+      if (!currentUser) {
         console.warn('No authenticated user found, order not saved to user account');
-        return;
+        return false;
       }
 
+      console.log('Saving order to Firestore for user:', currentUser.uid);
+
       await addDoc(collection(db, "orders"), {
-        userId: user.uid,
+        userId: currentUser.uid,
         orderId: orderData.orderId,
         cart: orderData.cart,
         address: orderData.address,
@@ -58,9 +79,13 @@ const OrderSuccess: React.FC = () => {
         timestamp: new Date(),
         status: 'confirmed'
       });
-      console.log('Order saved to Firestore');
+
+      console.log('Order saved to Firestore successfully');
+      setOrderSaved(true);
+      return true;
     } catch (error) {
       console.error('Failed to save order to Firestore:', error);
+      return false;
     }
   };
 
@@ -135,11 +160,6 @@ useEffect(() => {
         setVerificationStatus('success');
         localStorage.removeItem('orderData'); // Clear after success
 
-        // Save order to Firestore
-        if (parsedData) {
-          await saveOrderToFirestore(parsedData);
-        }
-
         // Send order confirmation email
         if (parsedData) {
           await sendOrderEmail(parsedData);
@@ -185,6 +205,7 @@ useEffect(() => {
           <h2 className="text-3xl font-bold mb-4 gradient-text">Order Confirmed!</h2>
           <p className="text-muted-foreground mb-8">
             Thank you for your purchase. Your order has been successfully placed and payment verified.
+            {orderSaved && <span className="block mt-2 text-green-600 font-medium">✓ Order saved to your account</span>}
             {emailSent && <span className="block mt-2 text-green-600 font-medium">✓ Order confirmation email sent to {orderData.address.email}</span>}
           </p>
           <Card className="glass mb-8">
