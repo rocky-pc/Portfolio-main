@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Menu, X, Home, User, Briefcase, Code, Settings, MessageCircle, Layers, ShoppingCart, LogOut, Package } from 'lucide-react';
 import Auth from './Auth';
@@ -7,10 +8,14 @@ import { onAuthStateChanged, signOut } from 'firebase/auth';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 
 const Navigation = () => {
+  const location = useLocation();
   const [isOpen, setIsOpen] = useState(false);
   const [activeSection, setActiveSection] = useState('hero');
   const [scrollProgress, setScrollProgress] = useState(0);
   const [currentUser, setCurrentUser] = useState<any>(null);
+
+  // Check if we're on the main portfolio page
+  const isMainPage = location.pathname === '/';
 
   const navItems = [
     { id: 'hero', label: 'Home', icon: Home },
@@ -57,12 +62,18 @@ const Navigation = () => {
     };
   }, []);
 
-  const scrollToSection = (id: string) => {
-    const element = document.getElementById(id);
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
-      setIsOpen(false);
+  const handleNavigation = (id: string) => {
+    if (isMainPage) {
+      // On main page, scroll to sections
+      const element = document.getElementById(id);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth' });
+      }
+    } else {
+      // On other pages, navigate to main page
+      window.location.href = '/';
     }
+    setIsOpen(false);
   };
 
   return (
@@ -74,7 +85,7 @@ const Navigation = () => {
             {navItems.map((item) => (
               <li key={item.id}>
                 <button
-                  onClick={() => scrollToSection(item.id)}
+                  onClick={() => handleNavigation(item.id)}
                   className={`text-sm font-medium transition-colors hover:text-primary ${
                     activeSection === item.id ? 'text-primary' : 'text-muted-foreground'
                   }`}
@@ -153,7 +164,7 @@ const Navigation = () => {
               {navItems.map((item) => (
                 <li key={item.id}>
                   <button
-                    onClick={() => scrollToSection(item.id)}
+                    onClick={() => handleNavigation(item.id)}
                     className={`flex items-center gap-3 w-full text-left p-2 rounded-lg transition-colors hover:bg-card-glass/50 ${
                       activeSection === item.id ? 'text-primary bg-primary/10' : 'text-muted-foreground'
                     }`}

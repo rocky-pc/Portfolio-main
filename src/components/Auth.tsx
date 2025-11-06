@@ -5,6 +5,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useToast } from "@/hooks/use-toast";
 
 interface AuthProps {
   children?: React.ReactNode;
@@ -15,6 +16,7 @@ export default function Auth({ children }: AuthProps) {
   const [password, setPassword] = useState("");
   const [user, setUser] = useState(auth.currentUser);
   const [isOpen, setIsOpen] = useState(false);
+  const { toast } = useToast();
 
   const moveToShop = () => {
     setIsOpen(false);
@@ -26,10 +28,19 @@ export default function Auth({ children }: AuthProps) {
       await createUserWithEmailAndPassword(auth, email, password);
       setUser(auth.currentUser);
       setIsOpen(false);
-      alert("Account created!");
-      moveToShop();
+      toast({
+        title: "Account created!",
+        description: "Welcome to our platform.",
+      });
+      setTimeout(() => {
+        moveToShop();
+      }, 4000);
     } catch (error) {
-      alert("Signup failed: " + (error as Error).message);
+      toast({
+        title: "Signup failed",
+        description: (error as Error).message,
+        variant: "destructive",
+      });
     }
   };
 
@@ -40,7 +51,11 @@ export default function Auth({ children }: AuthProps) {
       setIsOpen(false);
       moveToShop();
     } catch (error) {
-      alert("Login failed: " + (error as Error).message);
+      toast({
+        title: "Login failed",
+        description: (error as Error).message,
+        variant: "destructive",
+      });
     }
   };
 

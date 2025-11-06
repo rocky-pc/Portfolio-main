@@ -19,6 +19,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 // import { GradientButton } from '@/components/ui/gradient-button';
 import { ShoppingCart, Plus, Minus, Trash2, CreditCard, ArrowRight, CheckCircle, Thermometer, Menu } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import Navigation from '../components/Navigation';
 
 // Declare Cashfree globally
 declare global {
@@ -223,19 +224,22 @@ const handlePaymentSubmit = async () => {
       <div className="absolute inset-0 -z-10">
         <ShaderAnimation />
       </div>
+      {/* Navigation */}
+      <Navigation />
+
       {/* Header */}
-      <header className=" top-0 z-50">
-        <div className="container mx-auto px-8 py-4 flex justify-center items-center">
-          {currentStep === 'products' && <h1 className=" text-4xl font-bold gradient-text text-center">Tech Shop</h1>}
+      <header className="relative top-0 z-40 pt-[0.6rem]">
+        <div>
+          {currentStep === 'products'}
         </div>
       </header>
 
       {/* Main Content */}
-      <main className="container mx-auto px-6 py-0">
+      <main className="container mx-auto px-6 py-8 pt-20 pb-0">
         {currentStep === 'products' && (
           <>
            <div className="container mx-auto px-2 py-0 flex justify-between items-center">
-            <h2 className="text-3xl font-bold mb-4 gradient-text">Our Products</h2>
+            <h2 className="text-3xl font-bold mb-4 mt-4 gradient-text">Our Products</h2>
             <div className="flex items-center gap-2">
               <Sheet>
                 <SheetTrigger asChild>
@@ -321,7 +325,7 @@ const handlePaymentSubmit = async () => {
               </DropdownMenu>
             </div>
           </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-1">
               {products.map(product => (
                 <Card key={product.id} className="glass-hover">
                   <CardHeader>
