@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Menu, X, Home, User, Briefcase, Code, Settings, MessageCircle, Layers, ShoppingCart } from 'lucide-react';
+import Auth from './Auth';
 
 const Navigation = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -17,10 +18,7 @@ const Navigation = () => {
     { id: 'contact', label: 'Contact', icon: MessageCircle },
   ];
 
-  // Navigate to shop page on click of shop button
-  const handleShopClick = () => {
-    window.location.href = '/shop';
-  };
+
 
   useEffect(() => {
     const handleScroll = () => {
@@ -74,13 +72,14 @@ const Navigation = () => {
               </li>
             ))}
             <li>
-              <button
-                onClick={handleShopClick}
-                className={`text-sm font-medium transition-colors hover:text-primary ${
-                  activeSection === 'shop' ? 'text-primary' : 'text-muted-foreground'
-                }`}
-              >Shop
-              </button>
+              <Auth>
+                <button
+                  className={`text-sm font-medium transition-colors hover:text-primary ${
+                    activeSection === 'shop' ? 'text-primary' : 'text-muted-foreground'
+                  }`}
+                >Shop Login
+                </button>
+              </Auth>
             </li>
           </ul>
         </div>
@@ -116,15 +115,16 @@ const Navigation = () => {
                 </li>
               ))}
               <li>
-                <button
-                  onClick={handleShopClick}
-                  className={`flex items-center gap-3 w-full text-left p-2 rounded-lg transition-colors hover:bg-card-glass/50 ${
-                    activeSection === 'shop' ? 'text-primary bg-primary/10' : 'text-muted-foreground'
-                  }`}
-                >
-                  <ShoppingCart size={18} />
-                  <span className="font-medium">Shop</span>
-                </button>
+                <Auth>
+                  <button
+                    className={`flex items-center gap-3 w-full text-left p-2 rounded-lg transition-colors hover:bg-card-glass/50 ${
+                      activeSection === 'shop' ? 'text-primary bg-primary/10' : 'text-muted-foreground'
+                    }`}
+                  >
+                    <ShoppingCart size={18} />
+                    <span className="font-medium">Shop Login</span>
+                  </button>
+                </Auth>
               </li>
             </ul>
           </div>

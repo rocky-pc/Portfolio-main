@@ -4,6 +4,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import emailjs from '@emailjs/browser';
+import { db, auth } from '../firebaseConfig';
+import { addDoc, collection } from 'firebase/firestore';
 
 interface CartItem {
   id: number;
@@ -37,6 +39,30 @@ const OrderSuccess: React.FC = () => {
   useEffect(() => {
     emailjs.init("qAUdYmAh0F1iG2kZM");
   }, []);
+
+  // Function to save order to Firestore
+  const saveOrderToFirestore = async (orderData: OrderData) => {
+    try {
+      const user = auth.currentUser;
+      if (!user) {
+        console.warn('No authenticated user found, order not saved to user account');
+        return;
+      }
+
+      await addDoc(collection(db, "orders"), {
+        userId: user.uid,
+        orderId: orderData.orderId,
+        cart: orderData.cart,
+        address: orderData.address,
+        total: orderData.total,
+        timestamp: new Date(),
+        status: 'confirmed'
+      });
+      console.log('Order saved to Firestore');
+    } catch (error) {
+      console.error('Failed to save order to Firestore:', error);
+    }
+  };
 
   // Function to send order confirmation email
   const sendOrderEmail = async (orderData: OrderData) => {
@@ -108,6 +134,11 @@ useEffect(() => {
       if (data.success) {
         setVerificationStatus('success');
         localStorage.removeItem('orderData'); // Clear after success
+
+        // Save order to Firestore
+        if (parsedData) {
+          await saveOrderToFirestore(parsedData);
+        }
 
         // Send order confirmation email
         if (parsedData) {

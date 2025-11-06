@@ -9,6 +9,8 @@ import OrderSuccess from "./pages/OrderSuccess";
 import ContactUs from "./pages/ContactUs";
 import TermsandConditions from "./pages/TermsandConditions";
 import NotFound from "./pages/NotFound";
+import Auth from "./components/Auth";
+import Orders from "./components/Orders";
 
 const queryClient = new QueryClient();
 
@@ -20,6 +22,8 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
+
+          <Route path="/orders" element={<Orders />} />
           <Route path="/shop" element={<Shop />} />
           <Route path="/order-success" element={<OrderSuccess />} />
           <Route path="/contact-us" element={<ContactUs />} />
