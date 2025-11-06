@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Menu, X, Home, User, Briefcase, Code, Settings, MessageCircle, Layers } from 'lucide-react';
+import { Menu, X, Home, User, Briefcase, Code, Settings, MessageCircle, Layers, ShoppingCart } from 'lucide-react';
 
 const Navigation = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -79,8 +79,7 @@ const Navigation = () => {
                 className={`text-sm font-medium transition-colors hover:text-primary ${
                   activeSection === 'shop' ? 'text-primary' : 'text-muted-foreground'
                 }`}
-              >
-Shop
+              >Shop
               </button>
             </li>
           </ul>
@@ -116,6 +115,17 @@ Shop
                   </button>
                 </li>
               ))}
+              <li>
+                <button
+                  onClick={handleShopClick}
+                  className={`flex items-center gap-3 w-full text-left p-2 rounded-lg transition-colors hover:bg-card-glass/50 ${
+                    activeSection === 'shop' ? 'text-primary bg-primary/10' : 'text-muted-foreground'
+                  }`}
+                >
+                  <ShoppingCart size={18} />
+                  <span className="font-medium">Shop</span>
+                </button>
+              </li>
             </ul>
           </div>
         </div>

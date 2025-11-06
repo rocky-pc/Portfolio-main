@@ -82,7 +82,7 @@ interface CartItem {
 
 const Shop: React.FC = () => {
   const [cart, setCart] = useState<CartItem[]>([]);
-  const [currentStep, setCurrentStep] = useState<'products' | 'Shipping' | 'Shipping' | 'order-summary' | 'payment' | 'confirmation'>('products');
+  const [currentStep, setCurrentStep] = useState<'products' | 'Shipping' | 'order-summary' | 'payment' | 'confirmation'>('products');
   const [address, setAddress] = useState({
     name: '',
     email: '',
@@ -182,7 +182,7 @@ const handlePaymentSubmit = async () => {
     const cashfree = window.Cashfree({ mode: "production" });
 
     cashfree
-      .Shipping({
+      .checkout({
         paymentSessionId,
         redirectTarget: "_modal",           // <-- opens in a popup
         returnUrl,                          // ignored for _modal, we handle it ourselves
