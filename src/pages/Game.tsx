@@ -180,10 +180,6 @@ const Game: React.FC = () => {
             alert('Coins purchased successfully!');
           }
         })
-        .catch((err: any) => {
-          console.error("Cashfree error:", err);
-          alert("Payment failed. Please try again.");
-        });
     } catch (e) {
       console.error(e);
       alert("Could not start payment. Please try again.");
@@ -205,7 +201,7 @@ const Game: React.FC = () => {
 
   return (
     <div className="relative min-h-screen">
-      <div className="absolute inset-0 -z-10">
+      <div className="fixed inset-0 -z-10">
         <ShaderAnimation />
       </div>
       <Navigation />
