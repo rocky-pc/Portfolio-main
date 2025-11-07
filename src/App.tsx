@@ -8,6 +8,7 @@ import Shop from "./pages/shop";
 import OrderSuccess from "./pages/OrderSuccess";
 import ContactUs from "./pages/ContactUs";
 import TermsandConditions from "./pages/TermsandConditions";
+import Game from "./pages/Game";
 import NotFound from "./pages/NotFound";
 import Auth from "./components/Auth";
 import Orders from "./components/Orders";
@@ -26,6 +27,7 @@ const App = () => (
           <Route path="/orders" element={<Orders />} />
           <Route path="/shop" element={<Shop />} />
           <Route path="/order-success" element={<OrderSuccess />} />
+          <Route path="/game" element={<Game />} />
           <Route path="/contact-us" element={<ContactUs />} />
           <Route path="/TermsandConditions" element={<TermsandConditions />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

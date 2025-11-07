@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Menu, X, Home, User, Briefcase, Code, Settings, MessageCircle, Layers, ShoppingCart, LogOut, Package } from 'lucide-react';
+import { Menu, X, Home, User, Briefcase, Code, Settings, MessageCircle, Layers, ShoppingCart, LogOut, Package, Joystick } from 'lucide-react';
 import Auth from './Auth';
 import { auth } from '../firebaseConfig';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
@@ -13,6 +13,9 @@ const Navigation = () => {
   const [activeSection, setActiveSection] = useState('hero');
   const [scrollProgress, setScrollProgress] = useState(0);
   const [currentUser, setCurrentUser] = useState<any>(null);
+  const handleGameClick = () => {
+    window.location.href = '/game';
+  };
 
   // Check if we're on the main portfolio page
   const isMainPage = location.pathname === '/';
@@ -119,6 +122,10 @@ const Navigation = () => {
                       <ShoppingCart className="w-4 h-4 mr-2" />
                       Shop
                     </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => window.location.href = '/game'}>
+                      <Joystick className="w-4 h-4 mr-2" />
+                      Game
+                    </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem
                       onClick={() => signOut(auth)}
@@ -194,6 +201,13 @@ const Navigation = () => {
                     >
                       <ShoppingCart size={18} />
                       <span className="font-medium">Shop</span>
+                    </button>
+                    <button
+                      onClick={() => { window.location.href = '/game'; setIsOpen(false); }}
+                      className="flex items-center gap-3 w-full text-left p-2 rounded-lg transition-colors hover:bg-card-glass/50 text-muted-foreground"
+                    >
+                      <Joystick size={18} />
+                      <span className="font-medium">Game</span>
                     </button>
                     <button
                       onClick={() => { signOut(auth); setIsOpen(false); }}

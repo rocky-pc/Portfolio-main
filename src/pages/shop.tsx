@@ -183,7 +183,7 @@ const handlePaymentSubmit = async () => {
     const returnUrl = `${window.location.origin}/order-success`;
 
     // ---- Cashfree SDK (modal) ----
-    const cashfree = window.Cashfree({ mode: "production" });
+    const cashfree = window.Cashfree({ mode: "sandbox" });
 
     cashfree
       .checkout({
