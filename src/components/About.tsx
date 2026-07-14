@@ -34,10 +34,9 @@ const About = () => {
             <div className="space-y-4">
               <h3 className="text-2xl font-semibold gradient-accent-text">Professional Summary</h3>
               <p className="text-lg text-muted-foreground leading-relaxed">
-                Passionate and adaptable Full-Stack Software Developer with hands-on experience in 
-                developing and deploying web applications for enterprise-level clients in the oil and gas industry. 
-                Currently working at <span className="text-primary font-medium">Assure Rig Safety Tech Solutions</span>, 
-                with a proven track record of building scalable and secure solutions.
+                Passionate Full-Stack Developer with expertise in React, Python, and AWS. 
+                Building scalable solutions for the oil & gas industry at Assure Rig Safety Tech Solutions, 
+                with proven experience delivering high-traffic applications and enterprise-grade platforms.
               </p>
             </div>
 

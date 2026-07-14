@@ -55,7 +55,7 @@ const Experience = () => {
             Professional <span className="gradient-text">Experience</span>
           </h2>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Building enterprise solutions in the oil & gas industry
+            Building scalable full-stack and mobile solutions across industries
           </p>
         </div>
 
