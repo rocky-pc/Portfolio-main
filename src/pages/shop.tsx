@@ -1,0 +1,572 @@
+import React, { useState } from 'react';
+import TechGadgetProImage from '../images/Tech Gadget Pro.webp';
+import WirelessHeadphonesImage from '../images/Wireless Headphones.webp';
+import SmartWatchImage from '../images/Smart Watch.jpg';
+import LaptopStandImage from '../images/laptop stand.jpg';
+import GamingMouseImage from '../images/Gaming Mouse.avif';
+import BluetoothSpeakerImage from '../images/Bluetooth Speaker.webp';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
+import { ShaderAnimation } from '@/components/ui/shader-animation';
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+// import { GradientButton } from '@/components/ui/gradient-button';
+import { ShoppingCart, Plus, Minus, Trash2, CreditCard, ArrowRight, CheckCircle, Thermometer, Menu } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import Navigation from '../components/Navigation';
+
+// Declare Cashfree globally
+declare global {
+  interface Window {
+    Cashfree: any;
+  }
+}
+
+// Mock product data
+const products = [
+  {
+    id: 1,
+    name: 'Gaming Pad',
+    price: 1,
+    image: TechGadgetProImage,
+    description: 'Advanced tech gadget with cutting-edge features.',
+  },
+  {
+    id: 2,
+    name: 'Wireless Headphones',
+    price: 1,
+    image: WirelessHeadphonesImage,
+    description: 'Premium wireless headphones with noise cancellation.',
+  },
+  {
+    id: 3,
+    name: 'Smart Watch',
+    price: 1,
+    image: SmartWatchImage,
+    description: 'Feature-rich smart watch for fitness and connectivity.',
+  },
+  {
+    id: 4,
+    name: 'Laptop Stand',
+    price: 1,
+    image: LaptopStandImage,
+    description: 'Ergonomic laptop stand for better posture.',
+  },
+  {
+    id: 5,
+    name: 'Gaming Mouse',
+    price: 1,
+    image: GamingMouseImage,
+    description: 'High-precision gaming mouse with RGB lighting.',
+  },
+  {
+    id: 6,
+    name: 'Bluetooth Speaker',
+    price: 1,
+    image: BluetoothSpeakerImage,
+    description: 'Portable Bluetooth speaker with excellent sound quality.',
+  },
+];
+
+interface CartItem {
+  id: number;
+  name: string;
+  price: number;
+  quantity: number;
+  image: string;
+  description: string;
+}
+
+const Shop: React.FC = () => {
+  const navigate = useNavigate();
+  const [cart, setCart] = useState<CartItem[]>([]);
+  const [currentStep, setCurrentStep] = useState<'products' | 'Shipping' | 'order-summary' | 'payment' | 'confirmation'>('products');
+  const [address, setAddress] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    street: '',
+    city: '',
+    state: '',
+    zip: '',
+  });
+  const [payment, setPayment] = useState({
+    method: 'cashfree', // Default to Cashfree for multiple methods
+  });
+  const [orderId, setOrderId] = useState<string>('');
+  const [popupOpen, setPopupOpen] = useState(false);
+  const [popupMessage, setPopupMessage] = useState('');
+  const [cartBlink, setCartBlink] = useState(false);
+
+  const addToCart = (product: typeof products[0]) => {
+    setCart(prev => {
+      const existing = prev.find(item => item.id === product.id);
+      if (existing) {
+        return prev.map(item =>
+          item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item
+        );
+      }
+      return [...prev, { ...product, quantity: 1 }];
+    });
+    setPopupMessage(`${product.name} added to cart!`);
+    setPopupOpen(true);
+    setCartBlink(true);
+    setTimeout(() => setCartBlink(false), 400);
+    setTimeout(() => setPopupOpen(false), 2000);
+  };
+  const buynow = (product: typeof products[0]) => {
+    setCart(prev => {
+      const existing = prev.find(item => item.id === product.id);
+      if (existing) {
+        return prev.map(item =>
+          item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item
+        );
+      }
+      return [...prev, { ...product, quantity: 1 }];
+    });
+    setCartBlink(true);
+    setTimeout(() => setCartBlink(false), 400);
+  };
+  const updateQuantity = (id: number, quantity: number) => {
+    if (quantity <= 0) {
+      removeFromCart(id);
+      return;
+    }
+    setCart(prev => prev.map(item =>
+      item.id === id ? { ...item, quantity } : item
+    ));
+  };
+
+  const removeFromCart = (id: number) => {
+    setCart(prev => prev.filter(item => item.id !== id));
+  };
+
+  const getTotal = () => cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+
+  const handleAddressSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setCurrentStep('order-summary');
+  };
+
+const handlePaymentSubmit = async () => {
+  const totalAmount = getTotal();
+  const generatedOrderId = "order_" + Date.now();
+  setOrderId(generatedOrderId);
+
+  // keep order data for the success page
+  const orderData = { cart, address, orderId: generatedOrderId, total: totalAmount };
+  localStorage.setItem('orderData', JSON.stringify(orderData));
+
+  try {
+    const res = await fetch("/.netlify/functions/createOrder", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        orderId: generatedOrderId,
+        amount: totalAmount,
+        customerName: address.name,
+        customerEmail: address.email,
+        customerPhone: address.phone,
+      }),
+    });
+
+    const data = await res.json();
+    if (!data.payment_session_id) throw new Error("No payment session id");
+
+    const paymentSessionId = data.payment_session_id;
+    const returnUrl = `${window.location.origin}/order-success`;
+
+    // ---- Cashfree SDK (modal) ----
+    const cashfree = window.Cashfree({ mode: "sandbox" });
+
+    cashfree
+      .checkout({
+        paymentSessionId,
+        redirectTarget: "_modal",           // <-- opens in a popup
+        returnUrl,                          // ignored for _modal, we handle it ourselves
+      })
+      .then((result: any) => {
+        // ---- SUCCESS ----
+        if (result.paymentDetails) {
+          // close modal automatically (Cashfree does it) and go to success page
+          const successUrl = `${returnUrl}?order_id=${generatedOrderId}&verify=true`;
+          window.location.href = successUrl;
+        }
+      })
+      .catch((err: any) => {
+        console.error("Cashfree error:", err);
+        alert("Payment failed. Please try again.");
+      });
+  } catch (e) {
+    console.error(e);
+    alert("Could not start payment. Please try again.");
+  }
+};
+
+  const resetOrder = () => {
+    setCart([]);
+    setCurrentStep('products');
+    setAddress({ name: '', email: '', phone: '', street: '', city: '', state: '', zip: '' });
+    setPayment({ method: 'cashfree' });
+    setOrderId('');
+  };
+
+
+
+  return (
+    <div className="relative min-h-screen">
+      <div className="absolute inset-0 -z-10">
+        <ShaderAnimation />
+      </div>
+      {/* Navigation */}
+      <Navigation />
+
+      {/* Header */}
+      <header className="relative top-0 z-40 pt-[0.6rem]">
+        <div>
+          {currentStep === 'products'}
+        </div>
+      </header>
+
+      {/* Main Content */}
+      <main className="container mx-auto px-6 py-8 pt-20 pb-0">
+        {currentStep === 'products' && (
+          <>
+           <div className="container mx-auto px-2 py-0 flex justify-between items-center">
+            <h2 className="text-3xl font-bold mb-4 mt-4 gradient-text">Our Products</h2>
+            <div className="flex items-center gap-2">
+              <Sheet>
+                <SheetTrigger asChild>
+                  <Button variant="ghost" className={`relative ${cartBlink ? 'animate-pulse' : ''}`}>
+                    <ShoppingCart className="w-6 h-6" /> Cart
+                    {cart.length > 0 && (
+                      <Badge className="absolute -top-2 -right-2 bg-primary text-primary-foreground">
+                        {cart.reduce((sum, item) => sum + item.quantity, 0)}
+                      </Badge>
+                    )}
+                  </Button>
+                </SheetTrigger>
+                <SheetContent className="glass">
+                  <SheetHeader>
+                    <SheetTitle>Shopping Cart</SheetTitle>
+                    <SheetDescription>Your selected items</SheetDescription>
+                  </SheetHeader>
+                  <div className="mt-6 space-y-4">
+                    {cart.length === 0 ? (
+                      <p className="text-muted-foreground">Your cart is empty</p>
+                    ) : (
+                      <>
+                        {cart.map(item => (
+                          <div key={item.id} className="flex items-center space-x-4">
+                            <img src={item.image} alt={item.name} className="w-12 h-12 rounded" />
+                            <div className="flex-1">
+                              <h4 className="font-medium">{item.name}</h4>
+                              <p className="text-sm text-muted-foreground">Rs {item.price}</p>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                              >
+                                <Minus className="w-4 h-4" />
+                              </Button>
+                              <span>{item.quantity}</span>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                              >
+                                <Plus className="w-4 h-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => removeFromCart(item.id)}
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            </div>
+                          </div>
+                        ))}
+                        <Separator />
+                        <div className="flex justify-between items-center">
+                          <span className="font-medium">Total: Rs {getTotal().toFixed(2)}</span>
+                          <SheetTrigger asChild>
+                            <Button onClick={() => setCurrentStep('Shipping')}>
+                              Checkout
+                            </Button>
+                          </SheetTrigger>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                </SheetContent>
+              </Sheet>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost">
+                    <Menu className="w-6 h-6" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                  <DropdownMenuItem onClick={() => {
+                      navigate('/orders');
+                  }}>
+                    Show Orders
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-1">
+              {products.map(product => (
+                <Card key={product.id} className="glass-hover">
+                  <CardHeader>
+                    <img src={product.image} alt={product.name} className="w-full h-48 object-cover rounded" />
+                    <CardTitle>{product.name}</CardTitle>
+                    <CardDescription>{product.description}</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex justify-between items-center gap-2">
+                      <span className="text-2xl font-bold gradient-text">Rs {product.price}</span>
+                      <div className="flex gap-2">
+                        <Button onClick={() => addToCart(product)}>
+                          Add to Cart
+                        </Button>
+                        <Button size="default" variant="outline" onClick={() => {setCurrentStep('Shipping'); buynow(product); }}>
+                          ⚡ Buy Now
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </>
+        )}
+
+        {currentStep === 'Shipping' && (
+          <div className="max-w-2xl mx-auto">
+            <h2 className="text-3xl font-bold mb-8 gradient-text">Shipping Address</h2>
+            <form onSubmit={handleAddressSubmit} className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="name">Full Name</Label>
+                  <Input
+                    id="name"
+                    value={address.name}
+                    onChange={(e) => setAddress(prev => ({ ...prev, name: e.target.value }))}
+                    required
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="email">Email</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    value={address.email}
+                    onChange={(e) => setAddress(prev => ({ ...prev, email: e.target.value }))}
+                    required
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="phone">Phone</Label>
+                  <Input
+                    id="phone"
+                    value={address.phone}
+                    onChange={(e) => setAddress(prev => ({ ...prev, phone: e.target.value }))}
+                    required
+                  />
+                </div>
+              </div>
+              <div>
+                <Label htmlFor="street">Street Address</Label>
+                <Textarea
+                  id="street"
+                  value={address.street}
+                  onChange={(e) => setAddress(prev => ({ ...prev, street: e.target.value }))}
+                  required
+                />
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <Label htmlFor="city">City</Label>
+                  <Input
+                    id="city"
+                    value={address.city}
+                    onChange={(e) => setAddress(prev => ({ ...prev, city: e.target.value }))}
+                    required
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="state">State</Label>
+                  <Input
+                    id="state"
+                    value={address.state}
+                    onChange={(e) => setAddress(prev => ({ ...prev, state: e.target.value }))}
+                    required
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="zip">ZIP Code</Label>
+                  <Input
+                    id="zip"
+                    value={address.zip}
+                    onChange={(e) => setAddress(prev => ({ ...prev, zip: e.target.value }))}
+                    required
+                  />
+                </div>
+              </div>
+              <div className="flex justify-between">
+                <Button variant="outline" onClick={() => setCurrentStep('products')}>
+                  Back to Products
+                </Button>
+                <Button type="submit">
+                  <ArrowRight className="w-4 h-4 mr-2" />
+                  Continue
+                </Button>
+              </div>
+            </form>
+          </div>
+        )}
+
+        {/* Order Summary Step */}
+        {currentStep === 'order-summary' && (
+          <div className="max-w-4xl mx-auto">
+            <h2 className="text-3xl font-bold mb-8 gradient-text text-center">Order Summary</h2>
+            <div className="glass p-8 rounded-lg space-y-6">
+              {/* Order Details */}
+              <div className="space-y-4">
+                <h3 className="text-xl font-semibold">Your Order</h3>
+                {cart.map(item => (
+                  <div key={item.id} className="flex items-center space-x-4 p-4 border border-border/30 rounded-lg">
+                    <img src={item.image} alt={item.name} className="w-16 h-16 object-cover rounded" />
+                    <div className="flex-1">
+                      <h4 className="font-medium">{item.name}</h4>
+                      <p className="text-sm text-muted-foreground">{item.description}</p>
+                      <p className="text-sm text-muted-foreground">Quantity: {item.quantity}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-semibold">Rs {(item.price * item.quantity).toFixed(2)}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Shipping Address */}
+              <div className="space-y-4">
+                <h3 className="text-xl font-semibold">Shipping Address</h3>
+                <div className="p-4 border border-border/30 rounded-lg">
+                  <p className="font-medium">{address.name}</p>
+                  <p>{address.street}</p>
+                  <p>{address.city}, {address.state} {address.zip}</p>
+                  <p>{address.email}</p>
+                  <p>{address.phone}</p>
+                </div>
+              </div>
+
+              {/* Total */}
+              <div className="flex justify-between items-center pt-4 border-t border-border/30">
+                <span className="text-xl font-semibold">Total Amount:</span>
+                <span className="text-2xl font-bold gradient-text">Rs {getTotal().toFixed(2)}</span>
+              </div>
+
+              {/* Continue to Payment Button */}
+              <div className="flex justify-between">
+                <Button variant="outline" onClick={() => setCurrentStep('Shipping')}>
+                  Back to Shipping
+                </Button>
+                <Button onClick={() => setCurrentStep('payment')} className="px-8 py-3">
+                  <CreditCard className="w-5 h-5 mr-2" />
+                  Continue to Payment
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {currentStep === 'payment' && (
+          <div className="max-w-2xl mx-auto">
+            <h2 className="text-3xl font-bold mb-8 gradient-text">Payment Information</h2>
+            <div className="space-y-6">
+              <div className="glass p-6 rounded-lg">
+                <h3 className="text-lg font-semibold mb-4">Choose Payment Method</h3>
+                <p className="text-muted-foreground mb-4">
+                  You can pay using UPI, Card, or Net Banking through our secure payment gateway.
+                </p>
+                <div className="flex items-center space-x-4">
+                  {/* <div className="flex items-center space-x-2">
+                    <input
+                      type="radio"
+                      id="cashfree"
+                      name="paymentMethod"
+                      value="cashfree"
+                      checked={payment.method === 'cashfree'}
+                      onChange={(e) => setPayment({ method: e.target.value })}
+                    />
+                    <Label htmlFor="cashfree">Cashfree (UPI, Card, Net Banking)</Label>
+                  </div> */}
+                </div>
+              </div>
+              <div className="flex justify-between">
+                <Button variant="outline" onClick={() => setCurrentStep('order-summary')}>
+                  Back to Order Summary
+                </Button>
+                <Button onClick={handlePaymentSubmit}>
+                  <CreditCard className="w-4 h-4 mr-2" />
+                  Proceed to Payment
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {currentStep === 'confirmation' && (
+          <div className="max-w-2xl mx-auto text-center">
+            <CheckCircle className="w-16 h-16 text-accent mx-auto mb-6" />
+            <h2 className="text-3xl font-bold mb-4 gradient-text">Order Confirmed!</h2>
+            <p className="text-muted-foreground mb-8">
+              Thank you for your purchase. Your order has been successfully placed.
+            </p>
+            <div className="glass p-6 rounded-lg mb-8">
+              <h3 className="font-semibold mb-4">Order Summary</h3>
+              {cart.map(item => (
+                <div key={item.id} className="flex justify-between mb-2">
+                  <span>{item.name} x{item.quantity}</span>
+                  <span>Rs {(item.price * item.quantity).toFixed(2)}</span>
+                </div>
+              ))}
+              <Separator className="my-4" />
+              <div className="flex justify-between font-bold">
+                <span>Total</span>
+                <span>Rs {getTotal().toFixed(2)}</span>
+              </div>
+            </div>
+            <Button onClick={resetOrder}>
+              Continue Shopping
+            </Button>
+          </div>
+        )}
+      </main>
+
+      {/* Popup Dialog */}
+      <Dialog open={popupOpen} onOpenChange={setPopupOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Item Added</DialogTitle>
+            <DialogDescription>{popupMessage}</DialogDescription>
+          </DialogHeader>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+};
+
+export default Shop;
