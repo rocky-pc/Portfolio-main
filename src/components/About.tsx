@@ -4,10 +4,10 @@ import { MapPin, Calendar, Award } from 'lucide-react';
 
 const About = () => {
   const highlights = [
-    "Enterprise-level client experience in oil & gas industry",
-    "Full-stack development with React, Python, and AWS",
-    "Expert in cloud deployment and offline application packaging",
-    "Proven track record in scalable and secure solutions"
+    "Enterprise-level client experience in oil & gas industry and high-traffic food tech platforms",
+    "Full-stack development with React, TypeScript, Python, PHP (Laravel), Flutter, and AWS",
+    "Expert in cloud deployment, mobile app publishing, and offline application packaging",
+    "Proven track record in scalable, secure, and high-performance solutions"
   ];
 
   const education = {
@@ -34,9 +34,12 @@ const About = () => {
             <div className="space-y-4">
               <h3 className="text-2xl font-semibold gradient-accent-text">Professional Summary</h3>
               <p className="text-lg text-muted-foreground leading-relaxed">
-                Passionate Full-Stack Developer with expertise in React, Python, and AWS. 
-                Building scalable solutions for the oil & gas industry at Assure Rig Safety Tech Solutions, 
-                with proven experience delivering high-traffic applications and enterprise-grade platforms.
+                Passionate Full-Stack Developer with hands-on experience in 
+                developing and deploying web applications across enterprise and consumer domains. 
+                Previously contributed at <span className="text-primary font-medium">Assure Rig Safety Tech Solutions</span> 
+                and <span className="text-primary font-medium">Wellsee Bundle Technology Pvt Ltd</span>, 
+                with a proven track record of building scalable and secure solutions.
+                Currently <span className="text-accent font-medium">open to new opportunities</span> and excited to bring this expertise to a forward-thinking team.
               </p>
             </div>
 

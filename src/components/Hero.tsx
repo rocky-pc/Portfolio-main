@@ -98,9 +98,9 @@ const Hero = () => {
             className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto leading-relaxed animate-in fade-in slide-in-from-bottom duration-1000"
             style={{ animationDelay: '600ms' }}
           >
-            Passionate Full-Stack Developer with expertise in React, Python, and AWS. 
-            Building scalable solutions for the oil & gas industry at 
-            <span className="text-primary font-medium"> Assure Rig Safety Tech Solutions</span>.
+            Full-Stack Developer with expertise in React, Python, Flutter, and AWS. 
+            Building scalable mobile and web solutions at 
+            <span className="text-primary font-medium"> Wellsee Bundle Technology Pvt Ltd</span>.
           </p>
           
           <div 
