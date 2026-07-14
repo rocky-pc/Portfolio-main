@@ -58,7 +58,7 @@ const Hero = () => {
         delayChildren: 0.3,
       }
     }
-  };
+  } as const;
 
   const itemVariants = {
     hidden: { opacity: 0, y: 30 },
@@ -71,7 +71,7 @@ const Hero = () => {
         damping: 20,
       }
     }
-  };
+  } as const;
 
   const fadeInUp = {
     hidden: { opacity: 0, y: 40 },
@@ -83,7 +83,7 @@ const Hero = () => {
         ease: [0.25, 0.46, 0.45, 0.94],
       }
     }
-  };
+  } as const;
 
   return (
     <section className="min-h-screen flex items-center justify-center relative overflow-hidden bg-gradient-hero">

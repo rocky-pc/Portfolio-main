@@ -36,10 +36,10 @@ const About = () => {
               <p className="text-lg text-muted-foreground leading-relaxed">
                 Passionate Full-Stack Developer with hands-on experience in 
                 developing and deploying web applications across enterprise and consumer domains. 
-                Previously contributed at <span className="text-primary font-medium">Assure Rig Safety Tech Solutions</span> 
+                Previously contributed at <span className="text-primary font-medium">Assure Rig Safety Tech Solutions </span> 
                 and <span className="text-primary font-medium">Wellsee Bundle Technology Pvt Ltd</span>, 
                 with a proven track record of building scalable and secure solutions.
-                Currently <span className="text-accent font-medium">open to new opportunities</span> and excited to bring this expertise to a forward-thinking team.
+                Currently <span className="text-accent font-medium">Open to new opportunities</span> and excited to bring this expertise to a forward-thinking team.
               </p>
             </div>
 
