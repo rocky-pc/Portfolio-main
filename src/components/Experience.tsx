@@ -8,13 +8,13 @@ const Experience = () => {
       company: "Wellsee Bundle Technology Pvt Ltd",
       role: "Full Stack Developer",
       location: "Puducherry",
-      duration: "November 2025 – June 2026",
+      duration: "November 2025 – July 2026",
       projects: [
         {
           name: "Wellsee Food Delivery & Ecosystem",
-          description: "Engineered and deployed a high-traffic food delivery ecosystem, managing the full lifecycle from backend architecture to global App Store and Play Store publishing. Developed cross-platform mobile applications using Flutter, ensuring a high-performance, native-feel experience across iOS and Android. Architected robust backend services using PHP (Laravel), optimizing database queries and API response times for real-time order tracking.",
+          description: "Contributed to the Wellsee food delivery product and independently developed and published its mobile app on Google Play and the Apple App Store. Worked across the mobile application and backend integration, taking ownership of the app release process for Android and iOS.",
           technologies: ["Flutter", "PHP (Laravel)", "MySQL", "Hostinger Shared Hosting", "App Store Connect", "Google Play Console"],
-          impact: "Delivered a complete food delivery ecosystem with successful global app store publishing"
+          impact: "Independently developed and published the Wellsee app on Google Play and the Apple App Store"
         }
       ],
       responsibilities: [
