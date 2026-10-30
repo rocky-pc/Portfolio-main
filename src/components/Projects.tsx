@@ -3,10 +3,25 @@ import { useInView } from 'react-intersection-observer';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { ExternalLink, Github, Brain, FileText } from 'lucide-react';
+import { ExternalLink, Github, Brain, FileText, Smartphone } from 'lucide-react';
 
 const Projects = () => {
   const projects = [
+    {
+      title: "Wellsee Mobile App",
+      description: "Independently developed the Wellsee mobile application and published it for Android and iOS users. Explore the live app listings on both official app stores.",
+      technologies: ["Flutter", "Mobile App Development", "Google Play Console", "App Store Connect"],
+      category: "Published Mobile Application",
+      icon: Smartphone,
+      highlights: [
+        "Independently developed the mobile application",
+        "Published on Google Play",
+        "Published on the Apple App Store",
+        "Worked through app release and store submission"
+      ],
+      playStore: "https://play.google.com/store/apps/details?id=in.co.wellsee",
+      appStore: "https://apps.apple.com/in/app/wellsee/id6746031430"
+    },
     {
       title: "Advanced AI Voice Assistant",
       description: "Built an AI assistant using NLP and ML with LCD display for voice-based interaction. Aimed at enhancing digital accessibility through natural language processing and embedded systems integration.",
@@ -120,15 +135,20 @@ const Projects = () => {
                     </div>
                   </div>
 
-                  <div className="flex gap-3 pt-4 border-t border-border/30">
-                    <Button variant="outline" size="sm" className="flex-1">
-                      <Github className="w-4 h-4" />
-                      Code
-                    </Button>
-                    <Button variant="ghost" size="sm" className="flex-1">
-                      <ExternalLink className="w-4 h-4" />
-                      Demo
-                    </Button>
+                  <div className="flex flex-wrap gap-3 pt-4 border-t border-border/30">
+                    {project.playStore && (
+                      <a href={project.playStore} target="_blank" rel="noopener noreferrer" className="inline-flex flex-1 items-center justify-center gap-2 rounded-md border border-border px-3 py-2 text-sm font-medium hover:border-primary hover:text-primary transition-colors">
+                        <span aria-hidden="true">▶</span> Google Play
+                      </a>
+                    )}
+                    {project.appStore && (
+                      <a href={project.appStore} target="_blank" rel="noopener noreferrer" className="inline-flex flex-1 items-center justify-center gap-2 rounded-md border border-border px-3 py-2 text-sm font-medium hover:border-primary hover:text-primary transition-colors">
+                        <span aria-hidden="true"></span> App Store
+                      </a>
+                    )}
+                    {!project.playStore && !project.appStore && (
+                      <span className="text-xs text-muted-foreground">Project details available on request</span>
+                    )}
                   </div>
                 </div>
               </Card>
