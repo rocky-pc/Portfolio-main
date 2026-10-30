@@ -151,9 +151,7 @@ const Hero = () => {
             className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto leading-relaxed"
             variants={fadeInUp}
           >
-            Full-Stack Developer with expertise in React, Python, Flutter, and AWS.
-            Building scalable mobile and web solutions at
-            <span className="text-primary font-medium"> Wellsee Bundle Technology Pvt Ltd</span>.
+            Full-Stack Developer focused on building practical web and mobile products with React, TypeScript, Python, and Flutter. I independently developed and published the Wellsee mobile app on both Google Play and the Apple App Store.
           </motion.p>
 
           <motion.div
@@ -186,6 +184,17 @@ const Hero = () => {
                 Get In Touch
               </Button>
             </motion.div>
+          </motion.div>
+
+          <motion.div className="flex flex-wrap gap-3 justify-center items-center" variants={fadeInUp}>
+            <a href="https://play.google.com/store/apps/details?id=in.co.wellsee" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 rounded-lg border border-border/60 px-4 py-3 text-sm font-medium hover:border-primary hover:text-primary transition-colors">
+              <span aria-hidden="true" className="text-lg">▶</span>
+              Google Play
+            </a>
+            <a href="https://apps.apple.com/in/app/wellsee/id6746031430" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 rounded-lg border border-border/60 px-4 py-3 text-sm font-medium hover:border-primary hover:text-primary transition-colors">
+              <span aria-hidden="true" className="text-lg"></span>
+              App Store
+            </a>
           </motion.div>
 
           <motion.div
