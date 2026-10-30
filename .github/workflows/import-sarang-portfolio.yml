@@ -1,0 +1,44 @@
+name: Import Sarang cinematic portfolio
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/import-sarang-portfolio.yml
+
+permissions:
+  contents: write
+
+jobs:
+  import-template:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: main
+      - name: Replace starter site while preserving the resume
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/keep
+          cp "public/Jegathesh Resume.pdf" /tmp/keep/resume.pdf
+          cp "public/CV-Resume-PNG.png" /tmp/keep/CV-Resume-PNG.png
+          cp .github/workflows/import-sarang-portfolio.yml /tmp/keep/import.yml
+          git clone --depth 1 https://github.com/5araang/Nextjs-cinematic-portfolio.git /tmp/sarang
+          rm -rf /tmp/sarang/.git
+          find . -mindepth 1 -maxdepth 1 ! -name .git -exec rm -rf {} +
+          cp -a /tmp/sarang/. .
+          mkdir -p .github/workflows
+          cp /tmp/keep/import.yml .github/workflows/import-sarang-portfolio.yml
+          mkdir -p public
+          cp /tmp/keep/resume.pdf public/resume.pdf
+          cp /tmp/keep/CV-Resume-PNG.png public/CV-Resume-PNG.png
+      - name: Commit and push imported template
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "Import cinematic Next.js portfolio template"
+          git push origin HEAD:main
