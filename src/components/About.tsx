@@ -4,10 +4,10 @@ import { MapPin, Calendar, Award } from 'lucide-react';
 
 const About = () => {
   const highlights = [
-    "Enterprise-level client experience in oil & gas industry and high-traffic food tech platforms",
-    "Full-stack development with React, TypeScript, Python, PHP (Laravel), Flutter, and AWS",
-    "Expert in cloud deployment, mobile app publishing, and offline application packaging",
-    "Proven track record in scalable, secure, and high-performance solutions"
+    "Built digital safety and work-permit solutions for oil & gas operations",
+    "Full-stack development with React, TypeScript, Python, Flutter, and backend APIs",
+    "Independently developed and published a mobile app on Google Play and the App Store",
+    "Hands-on experience across application development, databases, and deployment"
   ];
 
   const education = {
@@ -34,12 +34,7 @@ const About = () => {
             <div className="space-y-4">
               <h3 className="text-2xl font-semibold gradient-accent-text">Professional Summary</h3>
               <p className="text-lg text-muted-foreground leading-relaxed">
-                Passionate Full-Stack Developer with hands-on experience in 
-                developing and deploying web applications across enterprise and consumer domains. 
-                Previously contributed at <span className="text-primary font-medium">Assure Rig Safety Tech Solutions </span> 
-                and <span className="text-primary font-medium">Wellsee Bundle Technology Pvt Ltd</span>, 
-                with a proven track record of building scalable and secure solutions.
-                Currently <span className="text-accent font-medium">Open to new opportunities</span> and excited to bring this expertise to a forward-thinking team.
+                Full-Stack Developer with hands-on experience building web applications, backend services, and cross-platform mobile products. I have worked on enterprise safety software at Assure Rig Safety Tech Solutions and contributed to the Wellsee product. I also independently developed and published the Wellsee mobile app on Google Play and the Apple App Store. I am now <span className="text-accent font-medium">open to new opportunities</span> where I can build reliable products and keep growing as an engineer.
               </p>
             </div>
 
